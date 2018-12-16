@@ -52,13 +52,15 @@ go get -v github.com/rubenv/sql-migrate/...
 Please edit settings below according to your own needs
 
 ## Create database
+
+You need to connect to the `master` database to perform this task
 ````
 CREATE DATABASE datawarehouse
 ````
 
 ## Create login/user
 
-Connect to the database created (`datawarehouse`)
+Connect to the newly database created (`datawarehouse`)
 ````
 CREATE LOGIN qwert WITH PASSWORD = 'Qwerty12#¤'
 
@@ -69,7 +71,7 @@ ALTER ROLE [db_owner] ADD MEMBER [qwert]
 GO
 ````
 
-## Create `dbconfig.yml` file based on your choises
+## Create `dbconfig.yml` file based on your choices
 ````
 development:
     dialect: mssql
