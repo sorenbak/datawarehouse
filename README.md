@@ -44,7 +44,7 @@ from private hosting to github.
 # Setup
 
 Download the `sql-migrate` tool (see [here for
-details](https://github.com/rubenv/sql-migrate):
+details](https://github.com/rubenv/sql-migrate)):
 ````
 go get -v github.com/rubenv/sql-migrate/...
 ````
