@@ -1,29 +1,20 @@
-IF OBJECT_ID('meta.[_migrations]') IS NOT NULL
-    SET NOEXEC ON
-GO
+-- ----------------------------------------------------------------------------------------------------------------------------------
+-- +migrate Up
+-- ----------------------------------------------------------------------------------------------------------------------------------
 CREATE SCHEMA [meta]
-GO
-CREATE TABLE meta.[_migrations]
-(
-    name      NVARCHAR(100) NOT NULL PRIMARY KEY,
-    createdtm DATETIME2     NOT NULL DEFAULT GETDATE(),
-    description NVARCHAR(1000)
-)
-GO
-INSERT INTO meta._migrations (name, description) VALUES ('20180612200000_INIT', 'Initial sources')
-GO
+;
 CREATE SCHEMA [init]
-GO
+;
 CREATE SCHEMA [temp]
-GO
+;
 CREATE SCHEMA [stag]
-GO
+;
 CREATE SCHEMA [repo]
-GO
+;
 SET ANSI_NULLS ON
-GO
+;
 SET QUOTED_IDENTIFIER ON
-GO
+;
 CREATE
 PROCEDURE[meta].[debug]-- |
 --| ==========================================================================================
@@ -51,7 +42,7 @@ BEGIN
     RETURN COALESCE(ERROR_NUMBER(), 0)
 END
 -- | ==========================================================================================
-GO
+;
 CREATE
 FUNCTION [meta].[check_date] --|
 --| ==========================================================================================
@@ -124,7 +115,7 @@ BEGIN
         END
 END
 --| ==========================================================================================
-GO
+;
 CREATE
 FUNCTION [meta].[check_numeric] --|
 --| ==========================================================================================
@@ -162,7 +153,7 @@ BEGIN
 END
 --| ==========================================================================================
 
-GO
+;
 CREATE FUNCTION [meta].[get_status_date] --|
 --| ==========================================================================================
 --| Description: Extract a valid status date from a delivery name according to file formats:
@@ -214,7 +205,7 @@ BEGIN
 END
 --| ==========================================================================================
 
-GO
+;
 CREATE FUNCTION [meta].[in_group] --|
 --| ==========================================================================================
 --| Description: Check if a user is in a specific group
@@ -237,9 +228,9 @@ BEGIN
        AND group_name = @groupname), 0)
 --| ==========================================================================================
 END
-GO
+;
 CREATE FUNCTION [meta].[split]() RETURNS INT AS BEGIN RETURN 1 END
-GO
+;
 CREATE
 FUNCTION [meta].[table_row_len] --|
 --| ==========================================================================================
@@ -266,7 +257,7 @@ BEGIN
 END
 --| ==========================================================================================
 
-GO
+;
 CREATE FUNCTION [meta].[user_access] --|
 --| ==========================================================================================
 --| Description: Check if a user has specific access to an agreement
@@ -291,7 +282,7 @@ BEGIN
        AND accessname = @accessname), 0)
 --| ==========================================================================================
 END
-GO
+;
 CREATE TABLE[meta].[agreement]
         (
 
@@ -330,11 +321,11 @@ CREATE TABLE[meta].[agreement]
        [id] ASC
    )WITH(PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON[PRIMARY]
 ) ON[PRIMARY]
-GO
+;
 SET ANSI_NULLS ON
-GO
+;
 SET QUOTED_IDENTIFIER ON
-GO
+;
 CREATE TABLE[meta].[agreement_attribute]
         (
 
@@ -355,7 +346,7 @@ CONSTRAINT[PK_agreement_attribute] PRIMARY KEY CLUSTERED
   [id] ASC
 )WITH(PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON[PRIMARY]
 ) ON[PRIMARY]
-GO
+;
 CREATE TABLE[meta].[attribute]
         (
 
@@ -374,7 +365,7 @@ CREATE TABLE[meta].[attribute]
    [id] ASC
 )WITH(PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON[PRIMARY]
 ) ON[PRIMARY]
-GO
+;
 CREATE
 VIEW[meta].[agreement_attribute_v] --|
 --| ==========================================================================================
@@ -394,7 +385,7 @@ SELECT a.id AS agreement_id,
        meta.attribute u ON (1 = 1)
        FULL OUTER JOIN
        meta.agreement_attribute au ON (a.id = au.agreement_id AND u.id = au.attribute_id)
-GO
+;
 CREATE TABLE[meta].[audit]
         (
 
@@ -418,7 +409,7 @@ CREATE TABLE[meta].[audit]
    [id] ASC
 )WITH(PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON[PRIMARY]
 ) ON[PRIMARY]
-GO
+;
 CREATE TABLE[meta].[delivery]
         (
 
@@ -444,7 +435,7 @@ CREATE TABLE[meta].[delivery]
    [id] ASC
 )WITH(PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON[PRIMARY]
 ) ON[PRIMARY]
-GO
+;
 CREATE TABLE[meta].[group]
         (
 
@@ -461,7 +452,7 @@ CREATE TABLE[meta].[group]
    [id] ASC
 )WITH(PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON[PRIMARY]
 ) ON[PRIMARY]
-GO
+;
 CREATE TABLE[meta].[type]
         (
 
@@ -492,7 +483,7 @@ CREATE TABLE[meta].[type]
    [id] ASC
 )WITH(PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON[PRIMARY]
 ) ON[PRIMARY]
-GO
+;
 CREATE TABLE[meta].[user]
         (
 
@@ -510,7 +501,7 @@ CREATE TABLE[meta].[user]
    [id] ASC
 )WITH(PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON[PRIMARY]
 ) ON[PRIMARY]
-GO
+;
 CREATE
 VIEW[meta].[agreement_delivery_count_v] --|
 --| ==========================================================================================
@@ -577,7 +568,7 @@ SELECT a.id,
  WHERE t.id = a.type_id
    AND g.id = a.group_id
    AND u.id = a.user_id
-GO
+;
 CREATE TABLE[meta].[operation](
 
     [id] [bigint] IDENTITY(1,1) NOT NULL,
@@ -599,7 +590,7 @@ CREATE TABLE[meta].[operation](
    [id] ASC
 )WITH(PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON[PRIMARY]
 ) ON[PRIMARY]
-GO
+;
 CREATE TABLE[meta].[stage]
         (
 
@@ -613,7 +604,7 @@ CREATE TABLE[meta].[stage]
    [id] ASC
 )WITH(PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON[PRIMARY]
 ) ON[PRIMARY]
-GO
+;
 CREATE
 VIEW[meta].[agreement_delivery_max_audit_v] --|
 --| ==========================================================================================
@@ -656,7 +647,7 @@ FROM meta.agreement a,
                  FROM meta.audit u2
                 WHERE u2.delivery_id = d.id)
 
-GO
+;
 CREATE TABLE[meta].[table]
         (
 
@@ -679,7 +670,7 @@ CREATE TABLE[meta].[table]
    [id] ASC
 )WITH(PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON[PRIMARY]
 ) ON[PRIMARY]
-GO
+;
 CREATE
 VIEW[meta].[agreement_stage_table_v] --|
 --| ==========================================================================================
@@ -728,7 +719,7 @@ meta.[table] t,
    AND t.id = u.table_id
    AND i.id = u.stage_id
    AND i.id = 0-- INIT delivery
-GO
+;
 CREATE TABLE[meta].[type_map](
 
     [id] [int] IDENTITY(1,1) NOT NULL,
@@ -738,7 +729,7 @@ CREATE TABLE[meta].[type_map](
 	[agreement_id] [bigint] NULL,
 	[column_name] [nvarchar] (128) NULL
 ) ON[PRIMARY]
-GO
+;
 CREATE
 VIEW[meta].[column_mapping_v] --|
 --| ==========================================================================================
@@ -782,7 +773,7 @@ SELECT c.agreement_id,
 
 
 --select* from meta.column_mapping_v where agreement_id = 166
-GO
+;
 CREATE TABLE[meta].[status]
         (
 
@@ -794,7 +785,7 @@ CREATE TABLE[meta].[status]
    [id] ASC
 )WITH(PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON[PRIMARY]
 ) ON[PRIMARY]
-GO
+;
 CREATE
 VIEW[meta].[delivery_id_audit_operation_v] --|
 --| ==========================================================================================
@@ -830,7 +821,7 @@ FROM meta.delivery d,
    AND u.id = o.audit_id
    AND s.id = o.status_id
 
-GO
+;
 CREATE TABLE[meta].[access](
 
     [id] [bigint] IDENTITY(1,1) NOT NULL,
@@ -843,7 +834,7 @@ CREATE TABLE[meta].[access](
    [id] ASC
 )WITH(PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON[PRIMARY]
 ) ON[PRIMARY]
-GO
+;
 CREATE TABLE[meta].[group_agreement]
         (
 
@@ -858,7 +849,7 @@ CREATE TABLE[meta].[group_agreement]
    [createdtm] [datetime]
         NOT NULL
 ) ON[PRIMARY]
-GO
+;
 CREATE
 VIEW[meta].[group_access_v] --|
 --| ==========================================================================================
@@ -891,7 +882,7 @@ SELECT g.id, g.name AS groupname,
                       
                       
 --select agreementname, groupname, count(*) from[meta].[group_access_v] group by agreementname, groupname
-GO
+;
 CREATE TABLE[meta].[link]
         (
 
@@ -908,7 +899,7 @@ CREATE TABLE[meta].[link]
         [bigint]
         NOT NULL
 ) ON[PRIMARY]
-GO
+;
 CREATE
 VIEW[meta].[link_v] --|
 --| ==========================================================================================
@@ -932,7 +923,7 @@ SELECT l.id,
        LEFT OUTER JOIN
        meta.[user] u
        ON (u.id = l.user_id)
-GO
+;
 CREATE TABLE[meta].[usage_log]
         (
 
@@ -951,7 +942,7 @@ CREATE TABLE[meta].[usage_log]
    [id] ASC
 )WITH(PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON[PRIMARY]
 ) ON[PRIMARY]
-GO
+;
 CREATE
 VIEW[meta].[usage_v] --|
 --| ==========================================================================================
@@ -965,7 +956,7 @@ SELECT l.user_id,
   FROM meta.usage_log l
        LEFT OUTER JOIN
        meta.[user] u ON (l.user_id = u.id)
-GO
+;
 CREATE TABLE[meta].[user_group]
         (
 
@@ -977,7 +968,7 @@ CREATE TABLE[meta].[user_group]
    [createdtm] [datetime]
         NOT NULL
 ) ON[PRIMARY]
-GO
+;
 CREATE
 VIEW[meta].[user_access_v] --|
 --| ==========================================================================================
@@ -1013,7 +1004,7 @@ SELECT u.id, u.username, u.realname,
                  FROM user_group ug
                 WHERE u.id = ug.user_id
                   AND g.id = ug.group_id)
-GO
+;
 CREATE
 VIEW[meta].[user_group_v] --|
 --| ==========================================================================================
@@ -1027,7 +1018,7 @@ SELECT uxg.*, ug.createdtm
                meta.[group] g) uxg
        LEFT OUTER JOIN
        meta.user_group ug ON uxg.user_id = ug.user_id AND uxg.group_id = ug.group_id
-GO
+;
 CREATE
 VIEW[meta].[user_v] --|
 --| ==========================================================================================
@@ -1047,7 +1038,7 @@ SELECT u.id,
          GROUP BY user_id) d
        ON(u.id = d.user_id)
 
-GO
+;
 CREATE
 FUNCTION[meta].[get_agreements] --|
 --| ==========================================================================================
@@ -1108,7 +1099,7 @@ SELECT a.*,
        ON(a.id = s.agreement_id)
 
 --| ------------------------------------------------------------------------------------------
-GO
+;
 CREATE TABLE[meta].[agreement_rule]
         (
 
@@ -1121,176 +1112,176 @@ CREATE TABLE[meta].[agreement_rule]
 
   [rule_text] [nvarchar] (4000) NOT NULL
 ) ON[PRIMARY]
-GO
+;
 ALTER TABLE[meta].[agreement] ADD CONSTRAINT[DF_agreement_type_id]  DEFAULT((0)) FOR[type_id]
-GO
+;
 ALTER TABLE[meta].[agreement] ADD CONSTRAINT[DF_agreement_createdtm]  DEFAULT(getdate()) FOR[createdtm]
-GO
+;
 ALTER TABLE[meta].[agreement] ADD CONSTRAINT[DF_agreement_modifydtm]  DEFAULT(getdate()) FOR[modifydtm]
-GO
+;
 ALTER TABLE[meta].[agreement] ADD CONSTRAINT[DF_agreement_frequency]  DEFAULT((0)) FOR[frequency]
-GO
+;
 ALTER TABLE[meta].[agreement_attribute] ADD CONSTRAINT[DF_agreement_attribute_createdtm]  DEFAULT(getdate()) FOR[createdtm]
-GO
+;
 ALTER TABLE[meta].[attribute] ADD CONSTRAINT[DF_attribute_createdtm]  DEFAULT(getdate()) FOR[createdtm]
-GO
+;
 ALTER TABLE[meta].[audit] ADD CONSTRAINT[DF_audit_createdtm]  DEFAULT(getdate()) FOR[createdtm]
-GO
+;
 ALTER TABLE[meta].[delivery] ADD CONSTRAINT[DF_file_createdtm]  DEFAULT(getdate()) FOR[createdtm]
-GO
+;
 ALTER TABLE[meta].[group] ADD DEFAULT(getdate()) FOR[createdtm]
-GO
+;
 ALTER TABLE[meta].[group_agreement] ADD DEFAULT(getdate()) FOR[createdtm]
-GO
+;
 ALTER TABLE[meta].[link] ADD CONSTRAINT[DF_link_createdtm]  DEFAULT(getdate()) FOR[createdtm]
-GO
+;
 ALTER TABLE[meta].[operation] ADD CONSTRAINT[DF_operation_createdtm]  DEFAULT(getdate()) FOR[createdtm]
-GO
+;
 ALTER TABLE[meta].[table] ADD CONSTRAINT[DF_table_createdtm]  DEFAULT(getdate()) FOR[createdtm]
-GO
+;
 ALTER TABLE[meta].[table] ADD CONSTRAINT[DF_table_temporary]  DEFAULT((0)) FOR[temporary]
-GO
+;
 ALTER TABLE[meta].[table] ADD CONSTRAINT[DF_table_permanent]  DEFAULT((1)) FOR[permanent]
-GO
+;
 ALTER TABLE[meta].[usage_log] ADD DEFAULT(getdate()) FOR[createdtm]
-GO
+;
 ALTER TABLE[meta].[user] ADD DEFAULT(getdate()) FOR[createdtm]
-GO
+;
 ALTER TABLE[meta].[user_group] ADD DEFAULT(getdate()) FOR[createdtm]
-GO
+;
 ALTER TABLE[meta].[agreement] WITH CHECK ADD CONSTRAINT[FK_agreement_group] FOREIGN KEY([group_id])
 REFERENCES[meta].[group]
         ([id])
-GO
+;
 ALTER TABLE[meta].[agreement]
         CHECK CONSTRAINT[FK_agreement_group]
-GO
+;
 ALTER TABLE[meta].[agreement] WITH CHECK ADD CONSTRAINT[FK_agreement_type] FOREIGN KEY([type_id])
 REFERENCES[meta].[type]
         ([id])
-GO
+;
 ALTER TABLE[meta].[agreement]
         CHECK CONSTRAINT[FK_agreement_type]
-GO
+;
 ALTER TABLE[meta].[agreement] WITH CHECK ADD CONSTRAINT[FK_agreement_user] FOREIGN KEY([user_id])
 REFERENCES[meta].[user]
         ([id])
-GO
+;
 ALTER TABLE[meta].[agreement]
         CHECK CONSTRAINT[FK_agreement_user]
-GO
+;
 ALTER TABLE[meta].[agreement_attribute] WITH CHECK ADD CONSTRAINT[FK_agreement_attribute_agreement] FOREIGN KEY([agreement_id])
 REFERENCES[meta].[agreement]
         ([id])
-GO
+;
 ALTER TABLE[meta].[agreement_attribute]
         CHECK CONSTRAINT[FK_agreement_attribute_agreement]
-GO
+;
 ALTER TABLE[meta].[agreement_attribute] WITH CHECK ADD CONSTRAINT[FK_agreement_attribute_attribute] FOREIGN KEY([attribute_id])
 REFERENCES[meta].[attribute]
         ([id])
-GO
+;
 ALTER TABLE[meta].[agreement_attribute]
         CHECK CONSTRAINT[FK_agreement_attribute_attribute]
-GO
+;
 ALTER TABLE[meta].[agreement_rule] WITH CHECK ADD CONSTRAINT[FK_agreement_rule_agreement] FOREIGN KEY([agreement_id])
 REFERENCES[meta].[agreement]
         ([id])
-GO
+;
 ALTER TABLE[meta].[agreement_rule]
         CHECK CONSTRAINT[FK_agreement_rule_agreement]
-GO
+;
 ALTER TABLE[meta].[audit] WITH CHECK ADD CONSTRAINT[FK_audit_delivery] FOREIGN KEY([delivery_id])
 REFERENCES[meta].[delivery]
         ([id])
-GO
+;
 ALTER TABLE[meta].[audit]
         CHECK CONSTRAINT[FK_audit_delivery]
-GO
+;
 ALTER TABLE[meta].[audit] WITH CHECK ADD CONSTRAINT[FK_audit_stage] FOREIGN KEY([stage_id])
 REFERENCES[meta].[stage]
         ([id])
-GO
+;
 ALTER TABLE[meta].[audit]
         CHECK CONSTRAINT[FK_audit_stage]
-GO
+;
 ALTER TABLE[meta].[audit] WITH CHECK ADD CONSTRAINT[FK_audit_table] FOREIGN KEY([table_id])
 REFERENCES[meta].[table]
         ([id])
-GO
+;
 ALTER TABLE[meta].[audit]
         CHECK CONSTRAINT[FK_audit_table]
-GO
+;
 ALTER TABLE[meta].[delivery] WITH CHECK ADD CONSTRAINT[FK_delivery_agreement] FOREIGN KEY([agreement_id])
 REFERENCES[meta].[agreement]
         ([id])
-GO
+;
 ALTER TABLE[meta].[delivery]
         CHECK CONSTRAINT[FK_delivery_agreement]
-GO
+;
 ALTER TABLE[meta].[delivery] WITH CHECK ADD CONSTRAINT[FK_delivery_user] FOREIGN KEY([user_id])
 REFERENCES[meta].[user]
         ([id])
-GO
+;
 ALTER TABLE[meta].[delivery]
         CHECK CONSTRAINT[FK_delivery_user]
-GO
+;
 ALTER TABLE[meta].[group_agreement] WITH CHECK ADD CONSTRAINT[FK_group_agreement_access] FOREIGN KEY([access_id])
 REFERENCES[meta].[access]
         ([id])
-GO
+;
 ALTER TABLE[meta].[group_agreement]
         CHECK CONSTRAINT[FK_group_agreement_access]
-GO
+;
 ALTER TABLE[meta].[group_agreement] WITH CHECK ADD CONSTRAINT[FK_group_agreement_agreement] FOREIGN KEY([agreement_id])
 REFERENCES[meta].[agreement]
         ([id])
-GO
+;
 ALTER TABLE[meta].[group_agreement]
         CHECK CONSTRAINT[FK_group_agreement_agreement]
-GO
+;
 ALTER TABLE[meta].[group_agreement] WITH CHECK ADD CONSTRAINT[FK_group_agreement_group] FOREIGN KEY([group_id])
 REFERENCES[meta].[group]
         ([id])
-GO
+;
 ALTER TABLE[meta].[group_agreement]
         CHECK CONSTRAINT[FK_group_agreement_group]
-GO
+;
 ALTER TABLE[meta].[link] WITH CHECK ADD CONSTRAINT[FK_link_status] FOREIGN KEY([status_id])
 REFERENCES[meta].[status]
         ([id])
-GO
+;
 ALTER TABLE[meta].[link]
         CHECK CONSTRAINT[FK_link_status]
-GO
+;
 ALTER TABLE[meta].[operation] WITH CHECK ADD CONSTRAINT[FK_operation_audit] FOREIGN KEY([audit_id])
 REFERENCES[meta].[audit]
         ([id])
-GO
+;
 ALTER TABLE[meta].[operation]
         CHECK CONSTRAINT[FK_operation_audit]
-GO
+;
 ALTER TABLE[meta].[operation] WITH CHECK ADD CONSTRAINT[FK_operation_status] FOREIGN KEY([status_id])
 REFERENCES[meta].[status]
         ([id])
-GO
+;
 ALTER TABLE[meta].[operation]
         CHECK CONSTRAINT[FK_operation_status]
-GO
+;
 ALTER TABLE[meta].[user_group] WITH CHECK ADD CONSTRAINT[FK_user_group_group] FOREIGN KEY([group_id])
 REFERENCES[meta].[group]
         ([id])
-GO
+;
 ALTER TABLE[meta].[user_group]
         CHECK CONSTRAINT[FK_user_group_group]
-GO
+;
 ALTER TABLE[meta].[user_group] WITH CHECK ADD CONSTRAINT[FK_user_group_user] FOREIGN KEY([user_id])
 REFERENCES[meta].[user]
         ([id])
-GO
+;
 ALTER TABLE[meta].[user_group]
         CHECK CONSTRAINT[FK_user_group_user]
-GO
+;
 CREATE PROCEDURE[dbo].[define] --|
 --| ==========================================================================================
 --| Description: Management procedure for defining a template procedure, function or view.
@@ -1331,7 +1322,7 @@ BEGIN
     -- + Execute the SQL statement
      IF LEN(@sql) > 0 EXEC sp_executesql @sql
  END
-GO
+;
 CREATE
 PROCEDURE[meta].[operation_add] --|
 --| ==========================================================================================
@@ -1362,7 +1353,7 @@ BEGIN
     RETURN
 END
 --| ==========================================================================================
-GO
+;
 CREATE
 PROCEDURE[meta].[group_agreement_add] --|
 --| ==========================================================================================
@@ -1401,7 +1392,7 @@ BEGIN
     RETURN
 END
 --| ==========================================================================================
-GO
+;
 CREATE
 PROCEDURE[meta].[generic_file2temp] --|
 --| ==========================================================================================
@@ -1596,7 +1587,7 @@ BEGIN
     RETURN
 END
 --| ==========================================================================================
-GO
+;
 CREATE
 PROCEDURE[meta].[table_add] --|
 --| ==========================================================================================
@@ -1623,7 +1614,7 @@ BEGIN
      RETURN
 END
 --| ==========================================================================================
-GO
+;
 CREATE
 PROCEDURE[meta].[table_create] --|
 --| ==========================================================================================
@@ -1849,7 +1840,7 @@ BEGIN
     --| END
 END
 --| ==========================================================================================
-GO
+;
 CREATE
 PROCEDURE[meta].[audit_add]-- |
 --| ==========================================================================================
@@ -1893,7 +1884,7 @@ BEGIN
     RETURN
 END
 -- | ==========================================================================================
-GO
+;
 CREATE
 PROCEDURE[meta].[delivery_add]-- |
 --| ==========================================================================================
@@ -2042,7 +2033,7 @@ BEGIN
     -- | END
 END
 -- | ==========================================================================================
-GO
+;
 CREATE
 PROCEDURE[meta].[agreement_add] --|
 --| ==========================================================================================
@@ -2297,15 +2288,17 @@ BEGIN
     --| END
 END
 --| ==========================================================================================
-GO
+;
 CREATE PROCEDURE[meta].[agreement_attribute_add] --|
 --| ==========================================================================================
+--| Author:      Soren Bak Larsen
+--| Create date: 2012-07-11
 --| Description: Add a customized attribute for agreement
 --| Arguments:
 (
     @agreement_id BIGINT,        --| ID of meta.agreement the attribute should be linked to
-    @name              NVARCHAR(50),  --| Attribute name
-    @value NVARCHAR(1000) --| Validation SQL to be inserted into WHERE clause
+    @name         NVARCHAR(50),  --| Attribute name
+    @value        NVARCHAR(1000) --| Validation SQL to be inserted into WHERE clause
 )
 AS 
 --| ------------------------------------------------------------------------------------------
@@ -2340,7 +2333,7 @@ BEGIN
     END
 
     --+ Check if value is valid
-    IF NOT(@options IS NULL OR @options LIKE @value + ',%' OR @options LIKE '%,' + @value)
+    IF NOT(@options IS NULL OR @options LIKE '%,' + @value + ',%' OR @options LIKE @value + ',%' OR @options LIKE '%,' + @value)
     BEGIN
         RAISERROR('Attribute [%s] not in options list [%s]', 11, 1, @value, @options)
         RETURN 2
@@ -2385,7 +2378,7 @@ BEGIN
     RETURN
 END
 --| ==========================================================================================
-GO
+;
 CREATE
 PROCEDURE[meta].[delivery_delete]-- |
 --| ==========================================================================================
@@ -2518,7 +2511,7 @@ BEGIN
     --| END
 END
 --| ==========================================================================================
-GO
+;
 CREATE
 PROCEDURE[meta].[agreement_delete] --|
 --| ==========================================================================================
@@ -2625,7 +2618,7 @@ BEGIN
     --| END
 END
 --| ==========================================================================================
-GO
+;
 CREATE
 PROCEDURE[meta].[agreement_dump] --|
 --| ==========================================================================================
@@ -2843,7 +2836,7 @@ data        NVARCHAR(4000)
     RETURN 0
 END
 --| ==========================================================================================
-GO
+;
 CREATE
 PROCEDURE[meta].[agreement_find] --|
 --| ==========================================================================================
@@ -2882,7 +2875,7 @@ BEGIN
     RETURN
 END
 --| ==========================================================================================
-GO
+;
 CREATE PROCEDURE[meta].[agreement_rule_add] --|
 --| ==========================================================================================
 --| Description: Add a customized validation rule to a specific agreement
@@ -2946,7 +2939,7 @@ BEGIN
     RETURN
 END
 --| ==========================================================================================
-GO
+;
 CREATE
 PROCEDURE[meta].[agreement_rule_add_all] --|
 --| ==========================================================================================
@@ -3035,7 +3028,7 @@ BEGIN
     RETURN
 END
 --| ==========================================================================================
-GO
+;
 CREATE
 PROCEDURE[meta].[analysis_file2temp] --|
 --| ==========================================================================================
@@ -3143,7 +3136,7 @@ BEGIN
     --| END
 END
 --| ==========================================================================================
-GO
+;
 CREATE
 PROCEDURE[meta].[analysis_stag2repo] --|
 --| ==========================================================================================
@@ -3441,7 +3434,7 @@ BEGIN
     RETURN 0
 END
 -- | ==========================================================================================
-GO
+;
 CREATE
 PROCEDURE[meta].[delivery_find] --|
 --| ==========================================================================================
@@ -3467,7 +3460,7 @@ BEGIN
     RETURN
 END
 --| ==========================================================================================
-GO
+;
 CREATE
 PROCEDURE[meta].[delivery_load] --|
 --| ==========================================================================================
@@ -3605,7 +3598,7 @@ BEGIN
     --| END
 END
 --| ==========================================================================================
-GO
+;
 CREATE
 PROCEDURE[meta].[delivery_publish] --|
 --| ==========================================================================================
@@ -3740,7 +3733,7 @@ BEGIN
     --| END
 END
 --| ==========================================================================================
-GO
+;
 CREATE
 PROCEDURE[meta].[delivery_validate] --|
 --| ==========================================================================================
@@ -3964,7 +3957,7 @@ BEGIN
     --| END
 END
 --| ==========================================================================================
-GO
+;
 CREATE
 PROCEDURE[meta].[generic_big2temp] --|
 --| ==========================================================================================
@@ -3987,7 +3980,7 @@ BEGIN
     RETURN
 END
 --| ==========================================================================================
-GO
+;
 CREATE
 PROCEDURE[meta].[generic_link2temp] --|
 --| ==========================================================================================
@@ -4088,7 +4081,7 @@ BEGIN
     RETURN
 END
 --| ==========================================================================================
-GO
+;
 CREATE
 PROCEDURE[meta].[generic_stag2repo] --|
 --| ==========================================================================================
@@ -4182,7 +4175,7 @@ BEGIN
     RETURN
 END
 --| ==========================================================================================
-GO
+;
 CREATE
 PROCEDURE[meta].[generic_temp2stag] --|
 --| ==========================================================================================
@@ -4318,7 +4311,7 @@ BEGIN
     RETURN
 END
 --| ==========================================================================================
-GO
+;
 CREATE
 PROCEDURE[meta].[get_data] --|
 --| ==========================================================================================
@@ -4484,7 +4477,7 @@ BEGIN
     EXEC sp_executesql @sql
 END
 --| ==========================================================================================
-GO
+;
 CREATE
 PROCEDURE[meta].[get_error_detail] --|
 --| ==========================================================================================
@@ -4563,7 +4556,7 @@ BEGIN
     EXEC sp_executesql @sql
 END
 --| ==========================================================================================
-GO
+;
 CREATE
 PROCEDURE[meta].[get_error_summary] --|
 --| ==========================================================================================
@@ -4612,7 +4605,7 @@ BEGIN
     EXEC sp_executesql @sql
 END
 --| ==========================================================================================
-GO
+;
 CREATE
 PROCEDURE[meta].[group_add] --|
 --| ==========================================================================================
@@ -4656,7 +4649,7 @@ BEGIN
     RETURN
 END
 --| ==========================================================================================
-GO
+;
 CREATE
 PROCEDURE[meta].[group_agreement_delete] --|
 --| ==========================================================================================
@@ -4696,7 +4689,7 @@ BEGIN
     RETURN
 END
 --| ==========================================================================================
-GO
+;
 CREATE
 PROCEDURE[meta].[log] --|
 --| ==========================================================================================
@@ -4720,9 +4713,9 @@ BEGIN
     VALUES(@user_id, @path, @query)
 END
 --| ==========================================================================================
-GO
+;
 CREATE PROCEDURE[meta].[template_file2temp] AS SELECT 1
-GO
+;
 CREATE
 PROCEDURE[meta].[type_map_add] --|
 --| ==========================================================================================
@@ -4804,7 +4797,7 @@ BEGIN
     RETURN
 END
 --| ==========================================================================================
-GO
+;
 CREATE
 PROCEDURE[meta].[user_add] --|
 --| ==========================================================================================
@@ -4850,7 +4843,7 @@ BEGIN
     RETURN
 END
 --| ==========================================================================================
-GO
+;
 CREATE
 PROCEDURE[meta].[user_group_add] --|
 --| ==========================================================================================
@@ -4887,7 +4880,7 @@ BEGIN
     RETURN
 END
 --| ==========================================================================================
-GO
+;
 CREATE
 PROCEDURE[meta].[user_group_delete] --|
 --| ==========================================================================================
@@ -4924,8 +4917,31 @@ BEGIN
     RETURN
 END
 --| ==========================================================================================
-GO
+;
 
+--| ==========================================================================================
+--| Create indexes
+CREATE UNIQUE INDEX ux_group_agreement_gid_aid_cid ON meta.group_agreement (group_id, agreement_id, access_id)
+;
+CREATE UNIQUE INDEX ux_stage_id_name ON meta.stage (id, name)
+;
+CREATE UNIQUE INDEX ux_delivery_id_aid_uid ON meta.delivery (id, agreement_id, user_id)
+;
+CREATE UNIQUE INDEX ux_access_id_name ON meta.access (id, name)
+;
+CREATE UNIQUE INDEX ux_group_id_name ON meta.[group] (id, name)
+;
+CREATE UNIQUE INDEX ux_id_name_schema ON meta.[table] (id, name, [schema])
+;
+CREATE INDEX ix_audit_id_sid_did_tid ON meta.audit (id, stage_id, delivery_id, table_id)
+;
+CREATE UNIQUE INDEX ux_type_map_id_aid_column_name ON meta.type_map (id, agreement_id, column_name)
+;
+CREATE INDEX ix_type_map_id_aid_data_type ON meta.type_map (id, agreement_id, data_type)
+;
+CREATE INDEX ix_type_map_aid_column_name_data_type ON meta.type_map (agreement_id, data_type, column_name)
+;
+--| ==========================================================================================
 
 --| Populate the [meta].[access] table
 --+ Consider using SET IDENTITY_INSERT meta.access ON/OFF
@@ -5088,10 +5104,15 @@ SELECT 'NLPNO_LINK',         NULL, NULL, NULL, 'MSSQL',    ',', 1, NULL, NULL, N
 SELECT 'COMMA_CSV_HEADER_C', NULL, NULL, NULL, 'CHAR',     ',', 2, NULL, NULL, NULL, NULL, NULL, NULL, 1000, NULL, NULL, '\n', NULL, '{datafile}.error' UNION ALL
 SELECT 'ANALYSIS_CSV',       NULL, NULL, NULL, 'WIDECHAR', ';', 2, NULL, NULL, NULL, NULL, NULL,100000, 0,    NULL, NULL, '\n', NULL, '{datafile}.error' UNION ALL
 SELECT 'COMMA_CSV_HEADER_ACP',NULL, NULL, 'ACP', 'WIDECHAR', ',', 2, NULL, NULL, NULL, NULL, NULL, NULL, 1000, NULL, NULL, '\n', NULL, '{datafile}.error'
-GO
+;
 -- Add initial system user
-/*EXEC meta.user_add 'system', 'System User', 'Owner of all agreements'
-GO
+EXEC meta.user_add 'system', 'System User', 'Owner of all agreements'
+;
 EXEC meta.user_group_add 1, 1
-GO
-*/
+;
+
+-- ----------------------------------------------------------------------------------------------------------------------------------
+-- +migrate Down
+-- ----------------------------------------------------------------------------------------------------------------------------------
+PRINT 'N/A'
+;
