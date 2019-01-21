@@ -1,0 +1,59 @@
+<!-- #include virtual="bin\setup.config"-->
+<html>
+  <head>
+    <title>Agreements</title>
+    <script src="/lib/jquery/dist/jquery.js"></script>
+    <link rel="stylesheet" type="text/css" href="/lib/bootstrap/dist/css/bootstrap.css">
+    <script lang="javascript">
+      var p     = new URLSearchParams(window.location.search);
+      var now   = new Date();
+      var first = new Date(p.get('date') || (now.getFullYear() + '-' + (now.getMonth() + 1) + '-' + '01'));
+      var date  = first.getFullYear() + '-' + (first.getMonth() + 1).toString().padStart(2, '0') + '-' + first.getDate().toString().padStart(2, '0');
+    </script>
+  </head>
+
+  <body onload="
+  $('#date').val(date);
+  $.ajax({ 
+    type    : 'GET',
+    url     : '/api/agreement/'+date,
+    dataType: 'json',
+    success:function(data) {
+        $('#loader').remove()
+        $.each(data, function(i, e){ 
+          $('#list').append('<tr>'
+            +'<td><a class=\'btn btn-block btn-default\' href=\'agreement_detail.html?agreement_id='+e.id+'\'>'+e.name+'</a></td>'
+            +'<td>'+e.group_name+'</td>'
+            +'<td>'+e.description+'</td>'
+            +'<td>'+e.createdtm+'</td>'
+            +'<td title=\''+e.diff_pct+'\'><a  class=\'btn btn-blobk btn-default\' href=\'deliveries.html?agreement_id='+e.id+'\'>'+e.ok+'</a></td>'
+            +'</tr>') })
+    } 
+  }); ">
+  <div class="container-fluid">
+    <h1>Agreements</h1>
+    List of existing agreements in the repository. Each agreement
+    corresponds to a file or a database import from an external
+    system. Click on the name to see details or the number of
+    deliveries for a list.
+    <table class="table table-condensed table-hover" id="list">
+      <form method="get" action="agreements.html">
+        <tr>
+          <td colspan="2"></td>
+          <td>
+            Enter a valid status date to highlight data availability (green)
+          </td>
+          <td>
+            <input id="date" name="date" type="text" maxlength="10" size="10"/>
+          </td>
+          <td><input type="submit" value="Go"/></td>
+        </tr>
+      </form>
+      <tr>
+        <th>Name</th><th>Group</th><th>Description</th><th>Latest</th><th>#</th>
+      </tr>
+   </table>
+   <img height="50" id="loader" src="/lib/img/infinite-gif-preloader.gif"/>
+  </div>
+  </body>
+</html>	

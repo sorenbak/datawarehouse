@@ -3892,7 +3892,7 @@ BEGIN
         
         --| Perform error checking after rules have been applied
         --+ Check if rows are found in the temp error table
-        SET @sql = 'SELECT @o_count = COUNT(*) FROM ' + @err_table
+        SET @sql = 'SELECT @o_count = COUNT(*) FROM ' + @err_table + ' WHERE delivery_id = ' + CAST(@delivery_id AS NVARCHAR(MAX))
         EXEC meta.debug @@PROCID, @sql
         EXEC sp_executesql @sql, N'@o_count INT OUT', @o_count = @count OUT
 
@@ -3903,10 +3903,18 @@ BEGIN
             RETURN 2
         END
 
-        --+ Drop the error(empty) table
-       SET @sql = 'DROP TABLE ' + @err_table
-       EXEC meta.debug @@PROCID, @sql
-       EXEC sp_executesql @sql
+        --+ Only drop if truly empty
+        SET @sql = 'SELECT @o_count = COUNT(*) FROM ' + @err_table
+        EXEC meta.debug @@PROCID, @sql
+        EXEC sp_executesql @sql, N'@o_count INT OUT', @o_count = @count OUT
+
+        IF @count = 0 
+        BEGIN
+            --+ Drop the error(empty) table
+            SET @sql = 'DROP TABLE ' + @err_table
+            EXEC meta.debug @@PROCID, @sql
+            EXEC sp_executesql @sql
+        END
     END
 
     --| BEGIN controlled transaction
