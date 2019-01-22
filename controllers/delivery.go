@@ -5,8 +5,8 @@ import (
 	"github.com/sorenbak/datawarehouse/repository"
 )
 
-func DeliveryList(c iris.Context, rep repository.Repository) string {
-	// swagger:operation GET /api/delivery Delivery DelliveryList
+func DeliveryList(c iris.Context, rep repository.Repository, agreement_id int64) string {
+	// swagger:operation GET /api/delivery/agreement/{agreement_id} Delivery DelliveryList
 	// List available deliveries
 	// ---
 	// produces:
@@ -14,7 +14,7 @@ func DeliveryList(c iris.Context, rep repository.Repository) string {
 	// parameters:
 	// - name: agreement_id
 	//   type: integer
-	//   in: query
+	//   in: path
 	//   required: false
 	// - name: page
 	//   description: Page of results (starting with 0 - default)
@@ -72,7 +72,6 @@ func DeliveryList(c iris.Context, rep repository.Repository) string {
 	//          user_id:
 	//            description: ID of user owning the delivery
 	//            type: integer
-	agreement_id := c.FormValueDefault("agreement_id", "0")
 	page := c.FormValueDefault("page", "0")
 	user := GetUsername(c)
 	user = "system"

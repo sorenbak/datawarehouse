@@ -2,7 +2,6 @@
 <html>
   <head>
     <title>Agreements</title>
-    <script src="/lib/jquery/dist/jquery.js"></script>
     <link rel="stylesheet" type="text/css" href="/lib/bootstrap/dist/css/bootstrap.css">
   </head>
 
@@ -28,9 +27,10 @@
         </form>
         <tr><th>Name</th><th>Group</th><th>Description</th><th>Latest</th><th>#</th></tr>
       </table>
-      <img height="50" id="loader" src="/lib/img/infinite-gif-preloader.gif"/>
+      <div id="loader" class="alert alert-light text-center" role="alert"><img height="50" src="/lib/img/infinite-gif-preloader.gif"/></div>
     </div>
     
+    <script src="/lib/jquery/dist/jquery.js"></script>
     <script>
       var p     = new URLSearchParams(window.location.search);
       var now   = new Date();
@@ -41,16 +41,17 @@
           type    : 'GET',
           url     : '/api/agreement/'+date,
           dataType: 'json',
+          error:function () { $('#loader').addClass('alert-danger').html('Error retrieving data') },
           success:function(data) {
               $('#loader').remove()
               $.each(data, function(i, e){ 
                   $('#list')
                       .append(
                           '<tr>'
-                              +`<td><a class="btn btn-block btn-default" href="agreement_detail.html?agreement_id=${e.id}">${e.name}</a></td>`
+                              +`<td><a class="btn btn-block btn-default" href="agreement_detail.html?agreement_id=${e.id}"><samp>${e.name}</samp></a></td>`
                               +`<td>${e.group_name}</td>`
                               +`<td>${e.description}</td>`
-                              +`<td>${e.createdtm}</td>`
+                              +`<td>${e.createdtm.substring(0, 19)}</td>`
                               +`<td title="${e.diff_pct}"><a class="btn btn-block btn-default" href="deliveries.html?agreement_id=${e.id}">${e.ok}</a></td>`
                               +'</tr>') })
           } 

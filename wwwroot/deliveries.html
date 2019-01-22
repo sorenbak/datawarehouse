@@ -1,53 +1,60 @@
 <html>
   <head>
     <title>Deliveries</title>
-    <script src="/lib/jquery/dist/jquery.js"></script>
     <link rel="stylesheet" type="text/css" href="/lib/bootstrap/dist/css/bootstrap.css">
-    <script lang="javascript">
-      var p  = new URLSearchParams(window.location.search)
-      var agreement_id = p.get('agreement_id') || 0
-      var user_id = p.get('user_id')           || 1
-      var type = user_id ? 'user' : 'agreement'
-    </script>
   </head>
 
-  <body onload="
-  $.ajax({ 
-    type    : 'GET',
-    url     : '/api/delivery?agreement_id='+agreement_id+'&user_id='+user_id,
-    dataType: 'json',
-    success:function(data) {
-      $.each(data, function(i, e){
-        $('#loader').remove()
-        var cl = 'primary'
-        if (e.stage_name == 'init'){ cl = 'info'      }
-        if (e.stage_name == 'temp'){ cl = 'warning'   }
-        if (e.stage_name == 'stag'){ cl = 'secondary' }
-        if (e.stage_name == 'repo'){ cl = 'success'   }
-        if (e.status_id  == 3     ){ cl = 'danger'    }
-        $('#list').append('<tr class=\'alert alert-' + cl + '\'>'
-          +'<td><a class=\'btn btn-block btn-default\' href=\'agreement_detail.html?agreement_id='+e.agreement_id+'\'>'+e.agreement_name+'</a></td>'
-          +'<td><a class=\'btn btn-block btn-default\' href=\'delivery_detail.html?delivery_id='+e.delivery_id+'\'>'+e.delivery_name+'</a></td>'
-          +'<td>'+e.delivery_owner+'</td>'
-          +'<td>'+e.delivery_status_date+'</td>'
-          +'<td>'+e.delivery_size+'</td>'
-          +'<td>'+e.stage_name+'</td>'
-          +'<td>'+e.audit_createdtm+'</td>'
-          +'<td>'+e.audit_description+'</td>'
-          +'<td title=\''+e.diff_pct+'\'><a  class=\'btn btn-blobk btn-default\' href=\'log.html?delivery_id='+e.delivery_id+'\'>Log</a></td>'
-          +'</tr>') })
-    } 
-  }); ">
-  <div class="container-fluid">
-    <h1>Deliveries</h1>
+  <body>
+    <div class="container-fluid">
+      <div id="header"></div>
+      
+      <table class="table table-sm table-condensed table-hover" id="list">
+        <tr>
+          <th>Agreement</th><th>Delivery</th><th>Owner</th><th>Status Date</th>
+          <th>Size</th><th>Stage</th><th>Audit Created</th><th>Type</th><th>Log</th>
+        </tr>
+      </table>
+      <div id="loader" class="alert alert-light text-center" role="alert"><img height="50" src="/lib/img/infinite-gif-preloader.gif"/></div>
+    </div>
     
-    <table class="table table-condensed table-hover" id="list">
-      <tr>
-        <th>Agreement</th><th>Delivery</th><th>Owner</th><th>Status Date</th>
-        <th>Size</th><th>Stage</th><th>Audit Created</th><th>Type</th><th>Log</th>
-      </tr>
-   </table>
-   <img height="50" id="loader" src="/lib/img/infinite-gif-preloader.gif"/>
-  </div>
+    <script src="/lib/jquery/dist/jquery.js"></script>
+    <script src="/lib/header.js"></script>
+    <script>
+      var p  = new URLSearchParams(window.location.search)
+      var agreement_id = p.get('agreement_id') || 0
+      var user_id      = p.get('user_id')      || 1
+      var page         = p.get('page')         || 0
+      var type         = user_id ? 'user' : 'agreement'
+      header('Deliveries', `/api/delivery/agreement/${agreement_id}`, page)
+      $.ajax({ 
+          type    : 'GET',
+          url     : `/api/delivery/agreement/${agreement_id}?page=${page}`,
+          dataType: 'json',
+          error  :function () { $('#loader').addClass('alert-danger').html('Error retrieving data') },
+          success:function(data) {
+              $.each(data, function(i, e){
+                  $('#loader').remove()
+                  var cl = 'primary'
+                  if (e.stage_name == 'init'){ cl = 'info'      }
+                  if (e.stage_name == 'temp'){ cl = 'warning'   }
+                  if (e.stage_name == 'stag'){ cl = 'secondary' }
+                  if (e.stage_name == 'repo'){ cl = 'success'   }
+                  if (e.status_id  == 3     ){ cl = 'danger'    }
+                  $('#list')
+                      .append(
+                          `<tr class="alert alert-${cl}">`
+                              +`<td><a href="agreement_detail.html?agreement_id=${e.agreement_id}"><samp>${e.agreement_name}</samp></a></td>`
+                              +`<td><a href="delivery_detail.html?delivery_id=${e.delivery_id}"><samp>${e.delivery_name}</samp></a></td>`
+                              +`<td>${e.delivery_owner}</td>`
+                              +`<td>${e.delivery_status_date}</td>`
+                              +`<td>${e.delivery_size}</td>`
+                              +`<td>${e.stage_name}</td>`
+                              +`<td>${e.audit_createdtm}</td>`
+                              +`<td>${e.audit_description}</td>`
+                              +`<td title="${e.diff_pct}"><a  class="badge badge-info" href="log.html?delivery_id=${e.delivery_id}">Log</a></td>`
+                              +`</tr>`) })
+    } 
+  })    </script>
+
   </body>
 </html>	

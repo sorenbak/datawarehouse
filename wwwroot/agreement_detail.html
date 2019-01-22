@@ -3,122 +3,169 @@
     <title>Agreement Detail</title>
     <script src="/lib/jquery/dist/jquery.js"></script>
     <link rel="stylesheet" type="text/css" href="/lib/bootstrap/dist/css/bootstrap.css">
-    <script lang="javascript">
-      var p  = new URLSearchParams(window.location.search)
-      var agreement_id = p.get('agreement_id') || 0
-    </script>
   </head>
 
-  <body onload="
-  $('#id').html(id)
-  $.ajax({ 
-    type    : 'GET',
-    url     : '/api/agreement_delivery_count_v/'+agreement_id,
-    dataType: 'json',
-    success:function(data) {
-        $.each(data, function(i, e){ 
-      $('#name').html(e.name)
-      $('#name').attr('href', $('#name').attr('href').concat(agreement_id))
-      $('#description').html(e.description)
-      $('#repo_count').html(e.repo_count)
-      $('#repo_count').attr('href', $('#repo_count').attr('href').concat(e.id))
-      $('#group_name').html(e.group_name)
-      $('#group_name').attr('href', $('#group_name').attr('href').concat(e.group_id))
-      $('#user_realname').html(e.user_realname)
-      $('#user_realname').attr('href', $('#user_realname').attr('href').concat(e.user_id))
-      $('#type_name').html(e.type_name)
-      $('#type_name').attr('href', $('#type_name').attr('href').concat(e.type_id))
-      $('#pattern').html(e.pattern)
-      $('#createdtm').html(e.createdtm)
-      $('#modifydtm').html(e.modifydtm)
-      $('#frequency').html(e.frequency)
-      $('#file2temp').html(e.file2temp)
-      $('#temp2stag').html(e.temp2stag)
-      $('#stag2repo').html(e.stag2repo)
-      $('#usage').attr('href', $('#usage').attr('href').concat(agreement_id)) })
-    } 
-  }); 
-  $.ajax({ 
-    type    : 'GET',
-    url     : '/api/attribute/list/'+agreement_id,
-    dataType: 'json',
-    success:function(data) {
-        $.each(data, function(i, e){ 
-          $('#attributes').append('<tr>'
-            +'<td><a class=\'btn btn-block btn-default\' attribute_id=\''+e.attribute_id+'\' agreement_id=\''+e.agreement_id+'\'>'+e.attribute_name+'</a></td>'
-            +'<td><div class=\''+(e.createdtm ? 'btn btn-success' : '')+'\'>'+e.value+'</div></td>'
-            +'<td>'+e.attribute_description+'</td>'
-            +'</tr>') })
-    } 
-  });
-  $.ajax({ 
-    type    : 'GET',
-    url     : '/api/column/list/'+agreement_id,
-    dataType: 'json',
-    success:function(data) {
-        $.each(data, function(i, e){ 
-          $('#columns').append('<tr>'
-            +'<td><a class=\'btn btn-block btn-default\' ordinal_number=\''+e.ordinal_nummber+'\' agreement_id=\''+e.agreement_id+'\'>'+e.column_name+'</a></td>'
-            +'<td>'+e.data_type+'</td>'
-            +'<td>'+e.character_maximum_length+'</td>'
-            +'<td>'+e.numeric_precision+'</td>'
-            +'<td>'+e.numeric_scale+'</td>'
-            +'<td width=\'40\'></td>'
-            +'<td>'+e.mapping+'</td>'
-            +'<td>'+e.mapping_type+'</td>'
-            +'</tr>') })
-    } 
-  });
-">
+  <body>
     <h1>Agreement Details <code id="id"></code></h1>
-      <div class="row">
-        <div class="col-sm-4">
-          <table class="table table-condensed">
-            <tr><th>Name</th><td><a id="name" class="btn btn-default btn-block" href="agreement_dump.html?agreement_id="></a></td></tr>
-            <tr><th>Description</th><td id="description"></td></tr>
-            <tr><th>Deliveries</th><td><a id="repo_count" class="btn btn-default btn-block" href="deliveries.html?id="></a></td></tr>
-            <tr><th>Group</th><td><a id="group_name" class="btn btn-default btn-block" href="group_detail.html?group_id="></a></td></tr>
-            <tr><th>User</th><td><a id="user_realname" class="btn btn-default btn-block" href="user_detail.html?user_id="></a></td></tr>
-            <tr><th>Type</th><td><a id="type_name" class="btn btn-default btn-block" href="type_detail.html?type_id="></a></td></tr>
-            <tr><th>Pattern</th><td><code id="pattern"></code></td></tr>
-            <tr><th>Created</th><td id="createdtm"></td></tr>
-            <tr><th>Modified</th><td id="modifydtm"></td></tr>
-            <tr><th>Frequency</th><td id="frequency"></td></tr>
-            <tr><th>--&gt;temp</th><td><code id="file2temp"></code></td></tr>
-            <tr><th>--&gt;stag</th><td><code id="temp2stag"></code></td></tr>
-            <tr><th>--&gt;repo</th><td><code id="stag2repo"></code></td></tr>
-            <tr><th>Usage</th><td><a id="usage" class="btn btn-default btn-block" href="links.html?agreement_id=">Lookup</a></td></tr>
-          </table>
-        </div>
-        <div class="col-sm-4">
-          <table class="table table-condensed">
-            <tr><th>ID</th><th>Trigger</th><th>Description</th></tr>
-            <tr>
-              <td colspan="3" class="center">NOT IMPLEMENTED - VIEW MISSING</td>
-            </tr>
-           </table>
-        </div>
-        <div class="col-sm-4">
-          <table id="attributes" class="table table-condensed">
-            <tr><th>Attribute</th><th>Value</th><th>Description</th></tr>
-          </table>
-        </div>
+    <div class="row">
+      <div class="col-sm-4">
+        <div id="loader_details" class="alert alert-light text-center" role="alert"><img height="50" src="/lib/img/infinite-gif-preloader.gif"/></div>
+        <table class="table table-condensed">
+          <tr><th>Name</th><td><a id="name" class="btn btn-default btn-block" href="agreement_dump.html?agreement_id="></a></td></tr>
+          <tr><th>Description</th><td id="description"></td></tr>
+          <tr><th>Deliveries</th><td><a id="repo_count" class="btn btn-default btn-block" href="deliveries.html?agreement_id="></a></td></tr>
+          <tr><th>Group</th><td><a id="group_name" class="btn btn-default btn-block" href="group_detail.html?group_id="></a></td></tr>
+          <tr><th>User</th><td><a id="user_realname" class="btn btn-default btn-block" href="user_detail.html?user_id="></a></td></tr>
+          <tr><th>Type</th><td><a id="type_name" class="btn btn-default btn-block" href="type_detail.html?type_id="></a></td></tr>
+          <tr><th>Pattern</th><td><code id="pattern"></code></td></tr>
+          <tr><th>Created</th><td id="createdtm"></td></tr>
+          <tr><th>Modified</th><td id="modifydtm"></td></tr>
+          <tr><th>Frequency</th><td id="frequency"></td></tr>
+          <tr><th>--&gt;temp</th><td><code id="file2temp"></code></td></tr>
+          <tr><th>--&gt;stag</th><td><code id="temp2stag"></code></td></tr>
+          <tr><th>--&gt;repo</th><td><code id="stag2repo"></code></td></tr>
+          <tr><th>Usage</th><td><a id="usage" class="btn btn-default btn-block" href="links.html?agreement_id=">Lookup</a></td></tr>
+        </table>
       </div>
+      <div class="col-sm-4">
+        <table id="triggers" class="table table-condensed">
+          <tr><th>ID</th><th>Trigger</th><th>Description</th></tr>
+        </table>
+        <div id="loader_triggers" class="alert alert-light text-center" role="alert"><img height="50" src="/lib/img/infinite-gif-preloader.gif"/></div>
+        
+      </div>
+      <div class="col-sm-4">
+        <table id="attributes" class="table table-condensed">
+          <tr><th>Attribute</th><th>Value</th><th>Description</th></tr>
+        </table>
+        <div id="loader_attributes" class="alert alert-light text-center" role="alert"><img height="50" src="/lib/img/infinite-gif-preloader.gif"/></div>
+      </div>
+    </div>
     <hr>
     Validation rules are applied before moving data from the "type-insensitive" temp table to stag in order to ensure consistency and proper error messages as an error table is produced if rows are found that cannot be validated properly.
-    <table>
+    <table id="rules" class="table table-condensed">
       <tr>
         <th>ID</th><th>Validation Rule</th>
       </tr>
-      <tr>
-        <td colspan="2">NOT IMPLEMENTED - VIEW MISSING</td>
-      </tr>
     </table>
+    <div id="loader_rules" class="alert alert-light text-center" role="alert"><img height="50" src="/lib/img/infinite-gif-preloader.gif"/></div>
 
     <hr>
     List of fields of input when data is delivered - when exposed in the repository two more columns are appended (<i>dw_delivery_id</i> and <i>dw_row_id</i> - referencing the internal delivery id and unique row number in the repo table). The mapping is applied when moving data from the <i>temp</i> to the <i>stag</i> schema in order to preserve consistency - if no agreement specific mapping rule is defined for a field a generic mapping may be applied depending on the data type.
     <table id="columns" class="table table-condensed">
-      <tr><th>Field</th><th>Type</th><th>Size</th><th>Precision</th><th>Scale</th><td></td><th>Mapping</th><th>Mapping Type</th></tr>
+      <tr><th>#</th><th>Field</th><th>Type</th><th>Size</th><th>Precision</th><th>Scale</th><td></td><th>Mapping</th><th>Mapping Type</th></tr>
     </table>
+    <div id="loader_columns" class="alert alert-light text-center" role="alert"><img height="50" src="/lib/img/infinite-gif-preloader.gif"/></div>
+
+    <script lang="javascript">
+      var p  = new URLSearchParams(window.location.search)
+      var agreement_id = p.get('agreement_id') || 0
+      $('#id').html(id)
+      // Agreement details
+      $.ajax({ 
+          type    : 'GET',
+          url     : '/api/agreement/deliverycount/'+agreement_id,
+          dataType: 'json',
+          error  :function () { $('#loader_details').addClass('alert-danger').html('Error retrieving data') },
+          success:function(data) {
+              $('#loader_details').remove()
+              $.each(data, function(i, e){ 
+                  $('#name').html(e.name)
+                  $('#name').attr('href', $('#name').attr('href').concat(agreement_id))
+                  $('#description').html(e.description)
+                  $('#repo_count').html(e.repo_count)
+                  $('#repo_count').attr('href', $('#repo_count').attr('href').concat(e.id))
+                  $('#group_name').html(e.group_name)
+                  $('#group_name').attr('href', $('#group_name').attr('href').concat(e.group_id))
+                  $('#user_realname').html(e.user_realname)
+                  $('#user_realname').attr('href', $('#user_realname').attr('href').concat(e.user_id))
+                  $('#type_name').html(e.type_name)
+                  $('#type_name').attr('href', $('#type_name').attr('href').concat(e.type_id))
+                  $('#pattern').html(e.pattern)
+                  $('#createdtm').html(e.createdtm)
+                  $('#modifydtm').html(e.modifydtm)
+                  $('#frequency').html(e.frequency)
+                  $('#file2temp').html(e.file2temp)
+                  $('#temp2stag').html(e.temp2stag)
+                  $('#stag2repo').html(e.stag2repo)
+                  $('#usage').attr('href', $('#usage').attr('href').concat(agreement_id)) })
+          } 
+      }); 
+      // Triggers
+      $.ajax({ 
+          type    : 'GET',
+          url     : '/api/agreement/trigger/'+agreement_id,
+          dataType: 'json',
+          complete:function () { $('#loader_triggers').remove() },
+          success:function(data) {
+              $.each(data, function(i, e){ 
+                  $('#loader_triggers').remove()
+                  $('#triggers')
+                      .append(`<tr>`
+                              +`<td><samp>${e.trigger_id}</samp></td>`
+                              +`<td><samp>${e.trigger_text}</samp></td>`
+                              +`<td>${e.description}</td>`
+                              +`</tr>`) })
+          } 
+      });
+      // Attributes
+      $.ajax({ 
+          type    : 'GET',
+          url     : '/api/agreement/attribute/'+agreement_id,
+          dataType: 'json',
+          error  :function () { $('#loader_attributes').addClass('alert-danger').html('Error retrieving data') },
+          success:function(data) {
+              $.each(data, function(i, e){ 
+                  $('#loader_attributes').remove()
+                  $('#attributes')
+                      .append(`<tr>`
+                              +`<td><a class="btn btn-block btn-default" attribute_id="${e.attribute_id}" agreement_id="${e.agreement_id}">${e.attribute_name}</a></td>`
+                              +`<td><div class="${e.createdtm ? 'btn btn-success' : ''}">${e.value}</div></td>`
+                              +`<td>${e.attribute_description}</td>`
+                              +`</tr>`) })
+          } 
+      });
+      // Rules
+      $.ajax({ 
+          type    : 'GET',
+          url     : '/api/agreement/rule/'+agreement_id,
+          dataType: 'json',
+          error  :function () { $('#loader_rules').addClass('alert-danger').html('Error retrieving data') },
+          success:function(data) {
+              $('#loader_rules').remove()
+              $.each(data, function(i, e){ 
+                  $('#loader_rules').remove()
+                  $('#rules')
+                      .append(`<tr>`
+                              +`<td><samp>${e.rule_id}</samp></td>`
+                              +`<td><samp>${e.rule_text}</samp></td>`
+                              +`</tr>`) })
+          } 
+      });      
+      // Columns
+      $.ajax({ 
+          type    : 'GET',
+          url     : '/api/agreement/column/'+agreement_id,
+          dataType: 'json',
+          error  :function () { $('#loader_columns').addClass('alert-danger').html('Error retrieving data') },
+          success:function(data) {
+              $('#loader_columns').remove()
+              $.each(data, function(i, e){ 
+                  $('#columns')
+                      .append(`<tr>`
+                              +`<td><samp>${e.ordinal_position}</samp></td>`
+                              +`<td><samp>${e.column_name}</samp></td>`
+                              +`<td><samp>${e.data_type}</samp></td>`
+                              +`<td><samp>${e.character_maximum_length}</samp></td>`
+                              +`<td><samp>${e.numeric_precision}</sam></td>`
+                              +`<td><samp>${e.numeric_scale}</samp></td>`
+                              +`<td width="40"></td>`
+                              +`<td><samp>${e.mapping}</samp></td>`
+                              +`<td><samp>${e.mapping_type}</samp></td>`
+                              +`</tr>`) })
+          } 
+      });
+    </script>
+
   </body>
 </html>	

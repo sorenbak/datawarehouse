@@ -48,11 +48,14 @@ func DwApp(db repository.Dber) *iris.Application {
 	api := EndpointParty(app)
 
 	// Agreement
-	api.Get("/agreement_attribute_v", hero.Handler(controllers.AgreementAttributeV))
-	api.Get("/agreement_delivery_count_v/{id:int64}", hero.Handler(controllers.AgreementDeliveryCountV))
+	api.Get("/agreement/attribute/{agreement_id:int64}", hero.Handler(controllers.AgreementAttribute))
+	api.Get("/agreement/deliverycount/{agreement_id:int64}", hero.Handler(controllers.AgreementDeliveryCount))
 	api.Get("/agreement/{date: string}", hero.Handler(controllers.AgreementList))
+	api.Get("/agreement/column/{agreement_id:int64}", hero.Handler(controllers.AgreementColumn))
+	api.Get("/agreement/rule/{agreement_id:int64}", hero.Handler(controllers.AgreementRule))
+	api.Get("/agreement/trigger/{agreement_id:int64}", hero.Handler(controllers.AgreementTrigger))
 	// Delivery
-	api.Get("/delivery", hero.Handler(controllers.DeliveryList))
+	api.Get("/delivery/agreement/{agreement_id:int64}", hero.Handler(controllers.DeliveryList))
 
 	return app
 }
