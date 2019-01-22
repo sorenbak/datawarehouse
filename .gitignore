@@ -8,7 +8,5 @@ datawarehouse
 dbconfig.yml
 *.out
 *~
-/management
-/GO.Management*
 /swagger/swagger.json
 .env*
