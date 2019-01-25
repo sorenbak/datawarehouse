@@ -1,0 +1,18 @@
+<ul class="nav nav-tabs">
+  <li id="nav-agreements"><a href="agreements.html">Agreements</a></li>
+  <li id="nav-users"><a href="users.html">Users</a></li>
+  <li id="nav-groups"><a href="groups.html">Groups</a></li>
+  <li id="nav-usage"><a href="usage.html">Usage</a></li>
+</ul>
+
+<script>
+  var pathname = window.location.pathname.substring(1,6)
+  switch(pathname) {
+  case "agree": $("#nav-agreements").addClass("active"); break
+  case "deliv": $("#nav-agreements").addClass("active"); break
+  case "users": $("#nav-users")     .addClass("active"); break
+  case "group": $("#nav-groups")    .addClass("active"); break
+  case "usage": $("#nav-usage")     .addClass("active"); break
+  }
+</script>
+  

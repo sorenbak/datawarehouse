@@ -1,0 +1,84 @@
+<html>
+  <head>
+    <link rel="stylesheet" type="text/css" href="/lib/bootstrap/dist/css/bootstrap.css">
+  </head>
+
+  <body>
+    <div class="container-fluid">
+      <div class="row">
+        <div class="col-sm-5">
+          <table id="details" class="table table-condensed table-hover">
+          </table>
+          <div id="loader_details" class="alert alert-light text-center" role="alert"><img height="50" src="/lib/img/infinite-gif-preloader.gif"/></div>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-sm-12">
+          <table id="operations" class="table table-condensed table-hover">
+            <tr><th>Created</th><th>Audit</th><th>Stage</th><th>Table</th><th>Created</th><th>Operation</th><th>Status</th><th>Description</th></tr>
+          </table>
+          <div id="loader_operations" class="alert alert-light text-center" role="alert"><img height="50" src="/lib/img/infinite-gif-preloader.gif"/></div>
+        </div>
+      </div>
+    </div>
+  </body>
+  
+  <script src="/lib/jquery/dist/jquery.js"></script>
+  <script src="/lib/navbar.js"></script>
+  <script lang="javascript">
+    var p  = new URLSearchParams(window.location.search)
+    var delivery_id = p.get('delivery_id') || 0
+    // Delivery details
+    $.ajax({ 
+        type    : 'GET',
+        url     : '/api/delivery/detail/'+delivery_id,
+        dataType: 'json',
+        error:function () { $('#loader_details').addClass('alert-danger').html(`[${this.url}]: ${arguments[2]}`) },
+        success:function(data) {
+            $('#loader_details').remove()
+            $.each(data, function(i, e){
+                $('#details').append(`<tr><th>ID</th><td>${e.delivery_id}</td></tr>`)
+                $('#details').append(`<tr><th>Name</th><td><samp>${e.delivery_name}</samp></td></tr>`)
+                $('#details').append(`<tr><th>Contact</th><td>${e.delivery_owner}</td></tr>`)
+                $('#details').append(`<tr><th>Size</th><td>${e.delivery_size}</td></tr>`)
+                $('#details').append(`<tr><th>Created</th><td><samp>${e.delivery_createdtm.substring(0,19)}</samp></td></tr>`)
+                $('#details').append(`<tr><th>Modified</th><td><samp>${e.audit_createdtm.substring(0,19)}</samp></td></tr>`)
+                $('#details').append(`<tr><th>Stage</th><td>${e.stage_name}</td></tr>`)
+                $('#details').append(`<tr><th>Audit</th><td>${e.audit_description}</td></tr>`)
+                if (e.audit_description != "AGREEMENNT") {
+                    $('#details').append(`<tr><td colspan="2"><a href="delivery_delete.aspx?agreement_id=${e.agreement_id}&delivery_id=${e.delivery_id}">Delete Delivery</a></td></tr>`)
+                }
+            })
+        }
+    })
+    
+    $.ajax({ 
+        type    : 'GET',
+        url     : '/api/delivery/operation/'+delivery_id,
+        dataType: 'json',
+        error:function () { $('#loader_operations').addClass('alert-danger').html(`[${this.url}]: ${arguments[2]}`) },
+        success:function(data) {
+            $('#loader_operations').remove()
+            $.each(data, function(i, e){
+                var cl = 'primary'
+                if (e.stage_name == 'init'){ cl = 'info'      }
+                if (e.stage_name == 'temp'){ cl = 'warning'   }
+                if (e.stage_name == 'stag'){ cl = 'secondary' }
+                if (e.stage_name == 'repo'){ cl = 'success'   }
+                if (e.status_id  == 3     ){ cl = 'danger'    }
+                $('#operations')
+                    .append(`<tr class="alert alert-${cl}">`
+                            +`<td>${e.audit_createdtm.substring(0,19)}</td>`
+                            +`<td>${e.audit_description}</td>`
+                            +`<td>${e.stage_name}</td>`
+                            +`<td>${e.table_schema}</td>`
+                            +`<td>${e.operation_createdtm.substring(0,19)}</td>`
+                            +`<td>${e.operation_name}</td>`
+                            +`<td>${e.status_description}</td>`
+                            +`<td>${e.operation_description}</td>`
+                            +`</tr>`)
+            })
+        }
+    })
+    </script>
+</html>	

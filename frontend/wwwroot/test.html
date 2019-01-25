@@ -1,0 +1,31 @@
+<html>
+  <head title="DW">
+  </head>
+  <body>
+    <h1>Agreements</h1>
+    <div id="app">
+      <table>
+        <tr><th>name</th></tr>
+        <tr v-for="agreement in agreements">
+          <td>{{ agreement.description }}</td>
+        </tr>
+      </table>
+    </div>
+    <script src="https://unpkg.com/vue"></script>
+    <script>
+      var app = new Vue({
+          el: '#app',
+          data: {
+              agreements: []
+          },
+          created () {
+              fetch('http://localhost:8080/api/agreement/2018-01-01')
+                  .then(response => response.json())
+                  .then(json => {
+                      this.agreements = json
+                  })
+          }
+      })
+    </script>
+  </body>
+</html>

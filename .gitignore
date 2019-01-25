@@ -1,5 +1,6 @@
 # Binaries for programs and plugins
-datawarehouse
+frontned
+daemon
 
 # Test binary, build with `go test -c`
 *.test
@@ -8,5 +9,5 @@ datawarehouse
 dbconfig.yml
 *.out
 *~
-/swagger/swagger.json
+swagger.json
 .env*
