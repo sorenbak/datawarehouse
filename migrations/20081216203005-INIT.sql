@@ -44,73 +44,76 @@ END
 -- | ==========================================================================================
 ;
 CREATE
-FUNCTION [meta].[check_date] --|
+FUNCTION [meta].[check_date] 
 --| ==========================================================================================
 --| Description: Provide a common function for validating date values
 --|              0    => OK
 --|              <> 0 => ERROR
 --| Arguments:
 (
-    @value   NVARCHAR(50),       --| Value to check
-    @format  INT                 --| Date format to check
-                                 --| (http://msdn.microsoft.com/en-us/library/ms187928.aspx)
+    @value   NVARCHAR(50),       
+    @format  INT                 
 )
 RETURNS TINYINT
 AS 
---| ------------------------------------------------------------------------------------------
 BEGIN
     --| Handle special NULL case => OK
-    IF @value IS NULL RETURN 0 --+ OK (Special NULL)
+    IF @value IS NULL RETURN 0 
 
     --| Set default DD/MM/YYYY
     SET @format = COALESCE(@format, 103)
-
-    --| Case on date format code
     RETURN
+        --| Case on date format code
         CASE @format
             --| 102 => YYYY.MM.DD
             WHEN 102 THEN
-                CASE WHEN @value LIKE '%[^0-9.]%'                                      THEN 10 --+ Contains other than 0-9 or . characters
-                     WHEN @value NOT LIKE '[1-3][0-9][0-9][0-9].[0-1][0-9].[0-3][0-9]' THEN 20 --+ Invalid format
+                CASE WHEN @value LIKE '%[^0-9.]%'                                      THEN 10 
+                     WHEN @value NOT LIKE '[1-3][0-9][0-9][0-9].[0-1][0-9].[0-3][0-9]' THEN 20 
                      ELSE 0
                 END
             --| 103 => DD/MM/YYYY (default)
             WHEN 103 THEN
-                CASE WHEN @value LIKE '%[^0-9/]%'                                      THEN 10 --+ Contains other than 0-9 or / characters
-                     WHEN @value NOT LIKE '[0-3][0-9]/[0-1][0-9]/[1-3][0-9][0-9][0-9]' THEN 20 --+ Invalid format
+                CASE WHEN @value LIKE '%[^0-9/]%'                                      THEN 10 
+                     WHEN @value NOT LIKE '[0-3][0-9]/[0-1][0-9]/[1-3][0-9][0-9][0-9]' THEN 20 
                      ELSE 0
                 END
             --| 104 => DD.MM.YYYY
             WHEN 104 THEN
-                CASE WHEN @value LIKE '%[^0-9.]%'                                      THEN 10 --+ Contains other than 0-9 or . characters
-                     WHEN @value NOT LIKE '[0-3][0-9].[0-1][0-9].[1-3][0-9][0-9][0-9]' THEN 20 --+ Invalid format
+                CASE WHEN @value LIKE '%[^0-9.]%'                                      THEN 10 
+                     WHEN @value NOT LIKE '[0-3][0-9].[0-1][0-9].[1-3][0-9][0-9][0-9]' THEN 20 
                      ELSE 0
                 END
             --| 105 => DD-MM-YYYY
             WHEN 105 THEN
-                CASE WHEN @value LIKE '%[^0-9\-]%'                                     THEN 10 --+ Contains other than 0-9 or - characters
-                     WHEN @value NOT LIKE '[0-3][0-9]-[0-1][0-9]-[1-3][0-9][0-9][0-9]' THEN 20 --+ Invalid format
+                CASE WHEN @value LIKE '%[^0-9\-]%' ESCAPE '\'                          THEN 10 
+                     WHEN @value NOT LIKE '[0-3][0-9]-[0-1][0-9]-[1-3][0-9][0-9][0-9]' THEN 20 
                      ELSE 0
                 END
             --| 111 => YYYY/MM/DD
             WHEN 111 THEN
-                CASE WHEN @value LIKE '%[^0-9/]%'                                      THEN 10 --+ Contains other than 0-9 or 7 characters
-                     WHEN @value NOT LIKE '[1-3][0-9][0-9][0-9]/[0-1][0-9]/[0-3][0-9]' THEN 20 --+ Invalid format
+                CASE WHEN @value LIKE '%[^0-9/]%'                                      THEN 10 
+                     WHEN @value NOT LIKE '[1-3][0-9][0-9][0-9]/[0-1][0-9]/[0-3][0-9]' THEN 20 
                      ELSE 0
                 END
             --| 102 => YYYY.MM.DD
             WHEN 102 THEN
-                CASE WHEN @value LIKE '%[^0-9.]%'                                      THEN 10 --+ Contains other than 0-9 or 7 characters
-                     WHEN @value NOT LIKE '[1-3][0-9][0-9][0-9].[0-1][0-9].[0-3][0-9]' THEN 20 --+ Invalid format
+                CASE WHEN @value LIKE '%[^0-9.]%'                                      THEN 10 
+                     WHEN @value NOT LIKE '[1-3][0-9][0-9][0-9].[0-1][0-9].[0-3][0-9]' THEN 20 
                      ELSE 0
                 END
-            --| 120 => YYYY-MM-DD
+           --| 120 => YYYY-MM-DD
             WHEN 120 THEN
-                CASE WHEN @value LIKE '%[^0-9\-]%'                                     THEN 10 --+ Contains other than 0-9 or 7 characters
-                     WHEN @value NOT LIKE '[1-3][0-9][0-9][0-9]-[0-1][0-9]-[0-3][0-9]' THEN 20 --+ Invalid format
+                CASE WHEN @value LIKE '%[^0-9\-]%' ESCAPE '\'                          THEN 10 
+                     WHEN @value NOT LIKE '[1-3][0-9][0-9][0-9]-[0-1][0-9]-[0-3][0-9]' THEN 20 
                      ELSE 0
                 END
-            --| Otherwise OK
+            --| 126 => YYYY-MM-DDTHH:MI:SE(.SSSSS) - The only datetime format
+            --| Allows T to be replaced with ' '
+            WHEN 126 THEN
+                CASE WHEN @value LIKE '%[^0-9T \-\:.\+]%' ESCAPE '\'                       THEN 10 
+                     WHEN @value NOT LIKE '[1-3][0-9][0-9][0-9]-[0-1][0-9]-[0-3][0-9][T ][0-2][0-9]:[0-5][0-9]:[0-5][0-9]%' THEN 20 
+                     ELSE 0
+                END
             ELSE 0
         END
 END
@@ -453,6 +456,19 @@ CREATE TABLE[meta].[group]
 )WITH(PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON[PRIMARY]
 ) ON[PRIMARY]
 ;
+CREATE TABLE [meta].[agreement_trigger]
+(
+   [id][bigint] IDENTITY(1,1)       NOT NULL,
+   [agreement_id] [bigint]          NOT NULL,
+   [trigger_id] [bigint]            NOT NULL,
+   [trigger_text] [nvarchar] (1000) NOT NULL,
+   [description] [nvarchar] (1000)  NULL,
+CONSTRAINT[PK_agreement_trigger] PRIMARY KEY CLUSTERED
+(
+  [id] ASC
+)WITH(PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON[PRIMARY]
+) ON[PRIMARY]
+;
 CREATE TABLE[meta].[type]
         (
 
@@ -478,6 +494,8 @@ CREATE TABLE[meta].[type]
 	[rowterminator] [nvarchar] (10) NULL,
 	[tablock] [bit] NULL,
 	[errorfile] [nvarchar] (250) NULL,
+    [data_source] [nvarchar] (50) NULL,
+    [errorfile_data_source] [nvarchar] (50) NULL
  CONSTRAINT[PK_type] PRIMARY KEY CLUSTERED
 (
    [id] ASC
@@ -612,41 +630,39 @@ VIEW[meta].[agreement_delivery_max_audit_v] --|
 --|              audit stage of the delivery
 --| ==========================================================================================
 AS
-SELECT a.name AS agreement_name, 
-       a.id AS agreement_id,
-       g.name AS agreement_group, 
-       a.description AS agreement_description, 
-       a.pattern AS agreement_pattern, 
-       d.name AS delivery_name, 
-       d.id AS delivery_id,
-       s.realname AS delivery_owner, 
-       d.createdtm AS delivery_createdtm, 
-       d.size AS delivery_size, 
-       d.status_date AS delivery_status_date,
-       u.name AS stage_name, 
-       u.createdtm AS audit_createdtm,
-       u.description AS audit_description,
-       u.status_id AS status_id,
-       d.user_id AS user_id
-FROM meta.agreement a,
- meta.[group] g,
-       meta.[user] s,
-       meta.delivery d,
-       (SELECT u.*, s.name, p.*
-          FROM meta.audit u,
-               meta.stage s,
-               (SELECT MAX(o.status_id) AS status_id, audit_id
-                  FROM meta.operation o
-                 GROUP BY audit_id) p
-         WHERE u.stage_id = s.id
-           AND p.audit_id = u.id) u
- WHERE g.id = a.group_id
-   AND s.id = d.user_id
-   AND a.id = d.agreement_id
-   AND u.id = (SELECT MAX(id)
-                 FROM meta.audit u2
-                WHERE u2.delivery_id = d.id)
-
+SELECT a.name         AS agreement_name, 
+       a.id           AS agreement_id,
+       g.name         AS agreement_group, 
+       a.description  AS agreement_description, 
+       a.pattern      AS agreement_pattern, 
+       d.name         AS delivery_name, 
+       d.id           AS delivery_id,
+       s.realname     AS delivery_owner, 
+       d.createdtm    AS delivery_createdtm, 
+       d.size         AS delivery_size, 
+       d.status_date  AS delivery_status_date,
+       st.name        AS stage_name, 
+       au.createdtm   AS audit_createdtm,
+       au.description AS audit_description,
+       u.status_id    AS status_id,
+       d.user_id      AS user_id
+  FROM meta.agreement a,
+       meta.[group]   g,
+       meta.[user]    s,
+       meta.delivery  d,
+       meta.audit    au,
+       meta.stage    st,
+       -- Max audit per delivery
+       (SELECT delivery_id, MAX(id) AS audit_id FROM meta.audit GROUP BY delivery_id) uu,
+       -- Max status per audit
+       (SELECT audit_id, MAX(status_id) AS status_id FROM meta.operation GROUP BY audit_id) u
+ WHERE g.id       = a.group_id
+   AND s.id       = d.user_id
+   AND a.id       = d.agreement_id
+   AND d.id       = uu.delivery_id
+   AND u.audit_id = uu.audit_id
+   AND au.id      = u.audit_id
+   AND st.id      = au.stage_id
 ;
 CREATE TABLE[meta].[table]
         (
@@ -1167,6 +1183,10 @@ ALTER TABLE[meta].[agreement] WITH CHECK ADD CONSTRAINT[FK_agreement_user] FOREI
 REFERENCES[meta].[user]
         ([id])
 ;
+ALTER TABLE[meta].[agreement_trigger] WITH CHECK ADD CONSTRAINT[FK_agreement_trigger_agreement] FOREIGN KEY([agreement_id])
+REFERENCES[meta].[agreement]
+        ([id])
+;
 ALTER TABLE[meta].[agreement]
         CHECK CONSTRAINT[FK_agreement_user]
 ;
@@ -1396,6 +1416,7 @@ END
 CREATE
 PROCEDURE[meta].[generic_file2temp] --|
 --| ==========================================================================================
+--| Author:      Soren Bak Larsen
 --| Description: Load the data from the delivery file into the load table in temp.
 --|              Use the provided name to lookup the agreement and other information from meta
 --|              data and make sure the temp schema table is created and populated from the
@@ -1421,28 +1442,30 @@ BEGIN
 
     --| Lookup the type details from the delivery_id via the agreement
     EXEC meta.debug @@PROCID, 'Lookup type details name in meta data via agreement'
-    DECLARE @schema              NVARCHAR(50)
-    DECLARE @table               NVARCHAR(128)
+    DECLARE @schema                NVARCHAR(50)
+    DECLARE @table                 NVARCHAR(128)
     -- BULK INSERT arguments
-    DECLARE @batchsize INT
-    DECLARE @check_constraints   BIT
-    DECLARE @codepage NVARCHAR(10)
-    DECLARE @datafiletype        NVARCHAR(10)
-    DECLARE @fieldterminator     NVARCHAR(10)
-    DECLARE @firstrow            INT
-    DECLARE @fire_triggers BIT
-    DECLARE @format_file         NVARCHAR(250)
-    DECLARE @keepidentity        BIT
-    DECLARE @keepnulls BIT
-    DECLARE @kilobytes_per_batch INT
-    DECLARE @lastrow INT
-    DECLARE @maxerrors           INT
-    DECLARE @order NVARCHAR(500)
-    DECLARE @rows_per_batch      INT
-    DECLARE @rowterminator NVARCHAR(10)
-    DECLARE @tablock             BIT
-    DECLARE @errorfile NVARCHAR(250)
-    DECLARE @nvarchar_max_load   NVARCHAR(1000)
+    DECLARE @batchsize             INT
+    DECLARE @check_constraints     BIT
+    DECLARE @codepage              NVARCHAR(10)
+    DECLARE @datafiletype          NVARCHAR(10)
+    DECLARE @fieldterminator       NVARCHAR(10)
+    DECLARE @firstrow              INT
+    DECLARE @fire_triggers         BIT
+    DECLARE @format_file           NVARCHAR(250)
+    DECLARE @keepidentity          BIT
+    DECLARE @keepnulls             BIT
+    DECLARE @kilobytes_per_batch   INT
+    DECLARE @lastrow               INT
+    DECLARE @maxerrors             INT
+    DECLARE @order                 NVARCHAR(500)
+    DECLARE @rows_per_batch        INT
+    DECLARE @rowterminator         NVARCHAR(10)
+    DECLARE @tablock               BIT
+    DECLARE @errorfile             NVARCHAR(250)
+    DECLARE @data_source           NVARCHAR(50)
+    DECLARE @errorfile_data_source NVARCHAR(50)
+    DECLARE @nvarchar_max_load     NVARCHAR(1000)
 
     SELECT @schema = t.table_schema,
            @table = t.table_name,
@@ -1465,11 +1488,13 @@ BEGIN
            @rows_per_batch = y.[rows_per_batch],
            @rowterminator = y.[rowterminator],
            @tablock = y.[tablock],
-           @errorfile = y.[errorfile]
+           @errorfile = y.[errorfile],
+           @data_source = y.[data_source],
+           @errorfile_data_source = y.[data_source]
       FROM meta.[type]                  y,
-           meta.agreement a,
+           meta.agreement               a,
            meta.agreement_stage_table_v t,
-           meta.agreement_attribute_v u
+           meta.agreement_attribute_v   u
      WHERE a.id = t.agreement_id
        AND a.id = u.agreement_id
        AND y.id = a.type_id
@@ -1478,7 +1503,8 @@ BEGIN
        AND u.attribute_name = 'NVARCHAR_MAX_LOAD'
 
     -- + Prepend path to form the full name of the delivery
-    SET @name = @path + '\' + @name
+    IF @data_source IS NULL     AND COALESCE(@path, '') <> '' SET @name = @path + '\' + @name
+    IF @data_source IS NOT NULL AND COALESCE(@path, '') <> '' SET @name = @path + '/' + @name
 
     -- + Set the field limiter to \0 if row size of target table exceeds 4000 (NVARCHAR) due to
     --+ hard limit of 8060 in MS SQL. This is optional as some data deliveries manages - others
@@ -1495,26 +1521,28 @@ BEGIN
     SET @errorfile   = REPLACE(@errorfile, '{datafile}', @name)
     SET @format_file = REPLACE(@format_file, '{datafile}', @name)
 
-    IF @batchsize           IS NOT NULL SET @sql = @sql + 'BATCHSIZE='''         + @batchsize           + ''','
-    IF @codepage            IS NOT NULL SET @sql = @sql + 'CODEPAGE='''          + @codepage            + ''','
-    IF @datafiletype        IS NOT NULL SET @sql = @sql + 'DATAFILETYPE='''      + @datafiletype        + ''','
-    IF @fieldterminator     IS NOT NULL SET @sql = @sql + 'FIELDTERMINATOR='''   + @fieldterminator     + ''','
-    IF @format_file         IS NOT NULL SET @sql = @sql + 'FORMAT_FILE='''       + @format_file         + ''','
-    IF @order               IS NOT NULL SET @sql = @sql + 'ORDER='''             + @order               + ''','
-    IF @rowterminator       IS NOT NULL SET @sql = @sql + 'ROWTERMINATOR='''     + @rowterminator       + ''','
-    IF @errorfile           IS NOT NULL SET @sql = @sql + 'ERRORFILE='''         + @errorfile           + ''','
+    IF @batchsize             IS NOT NULL SET @sql = @sql + 'BATCHSIZE='''             + @batchsize             + ''','
+    IF @codepage              IS NOT NULL SET @sql = @sql + 'CODEPAGE='''              + @codepage              + ''','
+    IF @datafiletype          IS NOT NULL SET @sql = @sql + 'DATAFILETYPE='''          + @datafiletype          + ''','
+    IF @fieldterminator       IS NOT NULL SET @sql = @sql + 'FIELDTERMINATOR='''       + @fieldterminator       + ''','
+    IF @format_file           IS NOT NULL SET @sql = @sql + 'FORMAT_FILE='''           + @format_file           + ''','
+    IF @order                 IS NOT NULL SET @sql = @sql + 'ORDER='''                 + @order                 + ''','
+    IF @rowterminator         IS NOT NULL SET @sql = @sql + 'ROWTERMINATOR='''         + @rowterminator         + ''','
+    IF @errorfile             IS NOT NULL SET @sql = @sql + 'ERRORFILE='''             + @errorfile             + ''','
+    IF @data_source           IS NOT NULL SET @sql = @sql + 'DATA_SOURCE='''           + @data_source           + ''','
+    IF @errorfile_data_source IS NOT NULL SET @sql = @sql + 'ERRORFILE_DATA_SOURCE=''' + @errorfile_data_source + ''','
 
-    IF @firstrow            IS NOT NULL SET @sql = @sql + 'FIRSTROW=' + CAST(@firstrow            AS NVARCHAR) + ','
-    IF @kilobytes_per_batch IS NOT NULL SET @sql = @sql + 'KILOBYTES_PER_BATCH=' + CAST(@kilobytes_per_batch AS NVARCHAR) + ','
-    IF @lastrow             IS NOT NULL SET @sql = @sql + 'LASTROW=' + CAST(@lastrow             AS NVARCHAR) + ','
-    IF @maxerrors           IS NOT NULL SET @sql = @sql + 'MAXERRORS=' + CAST(@maxerrors           AS NVARCHAR) + ','
-    IF @rows_per_batch      IS NOT NULL SET @sql = @sql + 'ROWS_PER_BATCH=' + CAST(@rows_per_batch      AS NVARCHAR) + ','
+    IF @firstrow              IS NOT NULL SET @sql = @sql + 'FIRSTROW='                + CAST(@firstrow            AS NVARCHAR) + ','
+    IF @kilobytes_per_batch   IS NOT NULL SET @sql = @sql + 'KILOBYTES_PER_BATCH='     + CAST(@kilobytes_per_batch AS NVARCHAR) + ','
+    IF @lastrow               IS NOT NULL SET @sql = @sql + 'LASTROW='                 + CAST(@lastrow             AS NVARCHAR) + ','
+    IF @maxerrors             IS NOT NULL SET @sql = @sql + 'MAXERRORS='               + CAST(@maxerrors           AS NVARCHAR) + ','
+    IF @rows_per_batch        IS NOT NULL SET @sql = @sql + 'ROWS_PER_BATCH='          + CAST(@rows_per_batch      AS NVARCHAR) + ','
 
-    IF @check_constraints = 1         SET @sql = @sql + 'CHECKCONSTRAINTS,'
-    IF @fire_triggers = 1         SET @sql = @sql + 'FIRE_TRIGGERS,'
-    IF @keepidentity = 1         SET @sql = @sql + 'KEEPIDENTITY,'
+    IF @check_constraints = 1 SET @sql = @sql + 'CHECKCONSTRAINTS,'
+    IF @fire_triggers = 1     SET @sql = @sql + 'FIRE_TRIGGERS,'
+    IF @keepidentity = 1      SET @sql = @sql + 'KEEPIDENTITY,'
     IF @keepnulls = 1         SET @sql = @sql + 'KEEPNULLS,'
-    IF @tablock = 1         SET @sql = @sql + 'TABLOCK,'
+    IF @tablock = 1           SET @sql = @sql + 'TABLOCK,'
 
     SET @sql = LEFT(@sql, LEN(@sql) - 1) + ')'
 
@@ -1583,9 +1611,8 @@ BEGIN
        SET size = @count
      WHERE id = @delivery_id
 
-
     RETURN
-END
+END           
 --| ==========================================================================================
 ;
 CREATE
@@ -2289,7 +2316,8 @@ BEGIN
 END
 --| ==========================================================================================
 ;
-CREATE PROCEDURE[meta].[agreement_attribute_add] --|
+CREATE
+PROCEDURE[meta].[agreement_attribute_add] --|
 --| ==========================================================================================
 --| Author:      Soren Bak Larsen
 --| Create date: 2012-07-11
@@ -2513,8 +2541,9 @@ END
 --| ==========================================================================================
 ;
 CREATE
-PROCEDURE[meta].[agreement_delete] --|
+PROCEDURE [meta].[agreement_delete] --|
 --| ==========================================================================================
+--| Author:      Soren Bak Larsen
 --| Description: Delete an agreement from the meta data - including deliveries
 --|              This is a very destructive procedure and should be called by authorities only
 --| Arguments:             
@@ -2593,6 +2622,11 @@ BEGIN
         DELETE FROM meta.agreement_attribute
          WHERE agreement_id = @agreement_id
 
+        --| Delete agreement triggers
+        EXEC meta.debug @@PROCID, 'Deleting agreement triggers'
+        DELETE FROM meta.agreement_trigger
+         WHERE id = @agreement_id
+
         --| Delete the agreement entry
         EXEC meta.debug @@PROCID, 'Deleting agreement'
         DELETE FROM meta.agreement
@@ -2617,12 +2651,100 @@ BEGIN
     RETURN
     --| END
 END
---| ==========================================================================================
 ;
 CREATE
-PROCEDURE[meta].[agreement_dump] --|
+PROCEDURE [meta].[delivery_trigger] --|
 --| ==========================================================================================
+--| Author:      Soren Bak Larsen
+--| Description: Call stored procedures for triggering external consumers of delivery.
+--|              
+--| Arguments:             
+(
+    @name NVARCHAR(250)  --| Name of file to match against the agreement pattern
+)
+AS 
+--| ------------------------------------------------------------------------------------------
+BEGIN
+    DECLARE @msg          NVARCHAR(4000)
+    DECLARE @trigger_text NVARCHAR(1000)
+    DECLARE @count        INT
+    DECLARE @agreement_id BIGINT
+    DECLARE @delivery_id  BIGINT
+    DECLARE @audit_id     BIGINT
+    DECLARE @table_id     BIGINT
+
+    --| Based on name pattern, lookup the agreement from meta.agreement table
+    EXEC meta.debug @@PROCID, 'Lookup active agreement from delivery.name LIKE agreement.pattern'
+    EXEC meta.agreement_find @name, 3, @agreement_id OUT, @trigger_text OUT
+    IF @agreement_id IS NULL
+    BEGIN
+        RAISERROR ('Error looking up agreement [%s]', 11, 1, @name)
+        RETURN 2
+    END
+
+    --| (Re-)promote delivery to repo
+    EXEC meta.delivery_add @agreement_id, 3, @name, NULL, 0, 'TRIGGER', @delivery_id OUT, @audit_id OUT, @table_id OUT
+
+    IF @delivery_id IS NULL
+    BEGIN
+        RAISERROR('Delivery [%s] for repository not available', 11, 1, @name)
+        RETURN 4
+    END
+
+    --| Get al triggers for looping in order
+    DECLARE a_rec CURSOR FOR
+    SELECT REPLACE(trigger_text, '@delivery_id', CAST(@delivery_id AS NVARCHAR))
+      FROM meta.agreement_trigger
+     WHERE agreement_id = @agreement_id
+     ORDER BY trigger_id
+        
+    OPEN a_rec
+        
+    FETCH NEXT FROM a_rec INTO @trigger_text
+
+    EXEC meta.debug @@PROCID, 'Loop over triggers'
+    WHILE @@FETCH_STATUS = 0
+    BEGIN
+        BEGIN TRANSACTION
+
+        BEGIN TRY
+            EXEC meta.debug @@PROCID, @trigger_text
+            EXEC sp_executesql @trigger_text
+
+        END TRY
+        --| ERROR handling
+        BEGIN CATCH
+            --| Log in audit and rollback transaction
+            IF @@trancount > 0 ROLLBACK TRANSACTION
+            IF @audit_id IS NOT NULL EXEC meta.operation_add @audit_id, 3, @@PROCID, @trigger_text
+            EXEC meta.debug @@PROCID, 'Triggering delivery failed'
+
+            FETCH NEXT FROM a_rec INTO @trigger_text
+            CONTINUE
+        END CATCH
+
+        --| SUCCESS handling
+        EXEC meta.debug @@PROCID, 'DONE'
+        --| COMMIT controlled transaction
+        COMMIT TRANSACTION
+
+        FETCH NEXT FROM a_rec INTO @trigger_text
+    END
+    CLOSE a_rec
+    DEALLOCATE a_rec
+    
+    --| Return success
+    RETURN
+    --| END
+END
+;
+CREATE
+PROCEDURE [meta].[agreement_dump] --|
+--| ==========================================================================================
+--| Author:      Soren Bak Larsen
 --| Description: Dump agreement as rows to be exported, displayed or otherwise processed
+--|              The output of this procedure must always reproduce the agreement from scratch
+--|              as it is used in the development cycle between internal parties and IT
 --|
 --| TODO:        This stored procedure outputs autogenerated code, which may be subject to
 --|              changes and thus it should be based on a template with insertion points/
@@ -2673,8 +2795,8 @@ BEGIN
     --| Create the result table with resulting agreement definition
     CREATE TABLE #agreement
     (
-        id BIGINT IDENTITY(1,1) PRIMARY KEY,
-data        NVARCHAR(4000)
+        id    BIGINT IDENTITY(1,1) PRIMARY KEY,
+        data  NVARCHAR(4000)
     )
 
     DECLARE @maxpos INT
@@ -2690,40 +2812,29 @@ data        NVARCHAR(4000)
     --+ Definitions
     INSERT INTO #agreement (data) VALUES('BEGIN TRY')
     INSERT INTO #agreement (data) VALUES('BEGIN TRANSACTION')
-    INSERT INTO #agreement (data) VALUES('DECLARE @name          NVARCHAR(100)')
-    INSERT INTO #agreement (data) VALUES('DECLARE @user          NVARCHAR(50)')
-    INSERT INTO #agreement (data) VALUES('DECLARE @group         NVARCHAR(50)')
-    INSERT INTO #agreement (data) VALUES('DECLARE @pattern       NVARCHAR(50)')
-    INSERT INTO #agreement (data) VALUES('DECLARE @type          NVARCHAR(25)')
-    INSERT INTO #agreement (data) VALUES('DECLARE @description   NVARCHAR(1000)')
-    INSERT INTO #agreement (data) VALUES('DECLARE @file2temp     NVARCHAR(250)')
-    INSERT INTO #agreement (data) VALUES('DECLARE @temp2stag     NVARCHAR(250)')
-    INSERT INTO #agreement (data) VALUES('DECLARE @stag2repo     NVARCHAR(250)')
-    INSERT INTO #agreement (data) VALUES('DECLARE @frequency     INT')
-    INSERT INTO #agreement (data) VALUES('DECLARE @table         NVARCHAR(200)')
-    INSERT INTO #agreement (data) VALUES('DECLARE @agreement_id  BIGINT')
-    INSERT INTO #agreement (data) VALUES('DECLARE @sql           NVARCHAR(MAX)')
     --+ Pretty header
     INSERT INTO #agreement (data) VALUES('--|-------' + REPLICATE('-', @maxlen + 20) + '|')
     INSERT INTO #agreement (data) VALUES('--| AGREEMENT DEFINITION' + REPLICATE(' ', @maxlen + 6) + '|')
     INSERT INTO #agreement (data) VALUES('--|-------' + REPLICATE('-', @maxlen + 20) + '|')
     --+ Agreement details
-    INSERT INTO #agreement (data) VALUES('SET @name         = ''' + @name        + ''' --|')
-    INSERT INTO #agreement (data) VALUES('SET @table        = ''[init].['' + @name + '']''')
-    INSERT INTO #agreement (data) VALUES('SET @user         = ''' + @user        + ''' --|')
-    INSERT INTO #agreement (data) VALUES('SET @group        = ''' + @group       + ''' --|')
-    INSERT INTO #agreement (data) VALUES('SET @pattern      = ''' + @pattern     + ''' --|')
-    INSERT INTO #agreement (data) VALUES('SET @type         = ''' + @type        + ''' --|')
-    INSERT INTO #agreement (data) VALUES('SET @description  = ''' + @description + ''' --|')
-    INSERT INTO #agreement (data) VALUES('SET @frequency    = '   + CAST(@frequency AS NVARCHAR))
+    INSERT INTO #agreement (data) VALUES('DECLARE @name        NVARCHAR(100)  = ''' + @name        + ''' --|')
+    INSERT INTO #agreement (data) VALUES('DECLARE @table       NVARCHAR(200)  = ''[init].['' + @name + '']''')
+    INSERT INTO #agreement (data) VALUES('DECLARE @user        NVARCHAR(50)   = ''' + @user        + ''' --|')
+    INSERT INTO #agreement (data) VALUES('DECLARE @group       NVARCHAR(50)   = ''' + @group       + ''' --|')
+    INSERT INTO #agreement (data) VALUES('DECLARE @pattern     NVARCHAR(50)   = ''' + @pattern     + ''' --|')
+    INSERT INTO #agreement (data) VALUES('DECLARE @type        NVARCHAR(25)   = ''' + @type        + ''' --|')
+    INSERT INTO #agreement (data) VALUES('DECLARE @description NVARCHAR(1000) = ''' + REPLACE(@description, '''', '''''') + ''' --|')
+    INSERT INTO #agreement (data) VALUES('DECLARE @frequency   INT            = '   + CAST(@frequency AS NVARCHAR))
     INSERT INTO #agreement (data) VALUES('/* 0 = single, 1 = daily (YYYYMMDD), 30 = monthly (YYYYMM), 365 = yearly (YYYY) */')
-    INSERT INTO #agreement (data) VALUES('SET @file2temp    = ''' + REPLACE(@file2temp, '''', '''''') + '''')
+    INSERT INTO #agreement (data) VALUES('DECLARE @file2temp   NVARCHAR(250)  = ''' + REPLACE(@file2temp, '''', '''''') + '''')
     INSERT INTO #agreement (data) VALUES('/* NULL => Generic file->temp load procedure, otherwise name of custom procedure */')
-    INSERT INTO #agreement (data) VALUES('SET @temp2stag    = ''' + REPLACE(@temp2stag, '''', '''''') + '''')
+    INSERT INTO #agreement (data) VALUES('DECLARE @temp2stag   NVARCHAR(250)  = ''' + REPLACE(@temp2stag, '''', '''''') + '''')
     INSERT INTO #agreement (data) VALUES('/* NULL => Generic temp->stag move procedure, Otherwise name of custom procedure*/')
-    INSERT INTO #agreement (data) VALUES('SET @stag2repo    = ''' + REPLACE(@stag2repo, '''', '''''') + '''')
+    INSERT INTO #agreement (data) VALUES('DECLARE @stag2repo   NVARCHAR(250)  = ''' + REPLACE(@stag2repo, '''', '''''') + '''')
     INSERT INTO #agreement (data) VALUES('/* NULL => Generic stag->repo move procedure, Otherwise name of custom procedure*/')
     INSERT INTO #agreement (data) VALUES('--|                                                                   --|')
+    INSERT INTO #agreement (data) VALUES('DECLARE @agreement_id  BIGINT')
+    INSERT INTO #agreement (data) VALUES('DECLARE @sql           NVARCHAR(MAX)')
 
     --| TABLE/VIEW Field definitions
     --+ Pretty header
@@ -2751,10 +2862,14 @@ data        NVARCHAR(4000)
         INSERT INTO #agreement (data)
         SELECT '    ' + column_name + REPLICATE(' ', @maxlen - LEN(column_name)) +
                CASE data_type
-                    WHEN 'numeric'          THEN 'NUMERIC(' + CAST(numeric_precision AS NVARCHAR) + ',' + CAST(numeric_scale AS NVARCHAR) + ')'
-                    WHEN 'varchar'          THEN 'VARCHAR('  + CAST(character_maximum_length AS NVARCHAR) + ')'
-                    WHEN 'nvarchar'         THEN 'NVARCHAR(' + CAST(character_maximum_length AS NVARCHAR) + ')'
-                    ELSE UPPER(data_type) 
+                    WHEN 'int'       THEN 'INT'
+                    WHEN 'bigint'    THEN 'BIGINT'
+                    WHEN 'numeric'   THEN 'NUMERIC(' + CAST(numeric_precision AS NVARCHAR) + ',' + CAST(numeric_scale AS NVARCHAR) + ')'
+                    WHEN 'date'      THEN 'DATE'
+                    WHEN 'datetime'  THEN 'DATETIME'
+                    WHEN 'datetime2' THEN 'DATETIME2'
+                    WHEN 'varchar'   THEN 'VARCHAR('  + CAST(character_maximum_length AS NVARCHAR) + ')'
+                    WHEN 'nvarchar'  THEN 'NVARCHAR(' + CAST(character_maximum_length AS NVARCHAR) + ')'
                END + CASE WHEN ordinal_position<CAST(@maxpos AS NVARCHAR) THEN ',' ELSE '' END + ' --|'
           FROM meta.column_mapping_v
          WHERE agreement_id = @agreement_id
@@ -2819,6 +2934,24 @@ data        NVARCHAR(4000)
            (SELECT 1 AS def UNION ALL SELECT 2) s
      WHERE t.agreement_id = @agreement_id
      ORDER BY t.id, s.def
+    --| Triggers for external consumers
+    --+ Pretty header
+    INSERT INTO #agreement (data) VALUES ('--|-----------------' + REPLICATE('-', @maxlen + 10) + '|')
+    INSERT INTO #agreement (data) VALUES ('--| TRIGGERS        ' + REPLICATE(' ', @maxlen + 10) + '|')
+    INSERT INTO #agreement (data) VALUES ('--| ID    Trigger           Description          |')
+    INSERT INTO #agreement (data) VALUES ('--|-------' + REPLICATE('-', @maxlen + 20) + '|')
+    --+ Trigger definitions
+    INSERT INTO #agreement (data)
+    SELECT CASE s.def
+                WHEN 1 THEN 'EXEC meta.agreement_trigger_add @agreement_id,'
+                WHEN 2 THEN '    ' + REPLICATE(' ', 4 - LEN(CAST(t.trigger_id AS NVARCHAR))) + CAST(t.trigger_id AS NVARCHAR)
+                          + ', ''' + REPLACE(t.trigger_text, '''', '''''') + ''', ''' + REPLACE(t.description, '''', '''''') + ''''
+           END
+      FROM meta.agreement_trigger t,
+           (SELECT 1 AS def UNION ALL SELECT 2) s
+     WHERE t.agreement_id = @agreement_id
+     ORDER BY t.id, s.def
+
     INSERT INTO #agreement (data) VALUES ('--|-----------------' + REPLICATE('-', @maxlen + 10) + '|')
     INSERT INTO #agreement (data) VALUES ('COMMIT TRANSACTION')
     INSERT INTO #agreement (data) VALUES ('END TRY')
@@ -2835,6 +2968,29 @@ data        NVARCHAR(4000)
 
     RETURN 0
 END
+--| ==========================================================================================
+;
+--| ==========================================================================================
+--| Author:      Soren Bak Larsen
+--| Description: Dump table definition for a delivery extracted by meta.get_data for preparation
+--|              on receiving side
+CREATE PROCEDURE meta.get_data_columns (@delivery_id BIGINT)
+AS
+SELECT COALESCE(string_agg(strng, ','), '')
+  FROM (
+     SELECT TOP(100000) cm.column_name + '  ' +
+            CASE data_type
+                WHEN 'numeric'   THEN 'NUMERIC('  + CAST(cm.numeric_precision AS NVARCHAR) + ',' + CAST(cm.numeric_scale AS NVARCHAR) + ')'
+                WHEN 'varchar'   THEN 'VARCHAR('  + CAST(cm.character_maximum_length AS NVARCHAR) + ')'
+                WHEN 'nvarchar'  THEN 'NVARCHAR(' + CAST(cm.character_maximum_length AS NVARCHAR) + ')'
+                ELSE UPPER(cm.data_type)
+            END AS strng, cm.ordinal_position
+       FROM meta.column_mapping_v cm,
+            meta.delivery d
+     WHERE cm.agreement_id = d.agreement_id
+       AND cm.table_schema = 'repo'
+       AND d.id = @delivery_id
+     ORDER BY ordinal_position) a
 --| ==========================================================================================
 ;
 CREATE
@@ -2943,6 +3099,8 @@ END
 CREATE
 PROCEDURE[meta].[agreement_rule_add_all] --|
 --| ==========================================================================================
+--| Author:      Soren Bak Larsen
+--| Create date: 2012-07-02
 --| Description: Add deduced validation rules from data types for all fields in agreement
 --| Arguments:
 (
@@ -2995,6 +3153,10 @@ BEGIN
                 WHEN 'BIGINT'   THEN 'meta.check_numeric(' + @column_name + ', 18, 0) = 0'
                 --| NUMERIC   => meta.check_numeric(x, precision, scale)
                 WHEN 'NUMERIC'  THEN 'meta.check_numeric(' + @column_name + ',' + CAST(@numeric_precision AS NVARCHAR) + ',' + CAST(@numeric_scale AS NVARCHAR) + ') = 0'
+                --| DATETIME2  => meta.check_date(x, 126)
+                WHEN 'DATETIME2' THEN 'meta.check_date('    + @column_name + ',126) = 0'
+                --| DATETIME  => meta.check_date(x, 126)
+                WHEN 'DATETIME' THEN 'meta.check_date('    + @column_name + ',126) = 0'
                 --| DATE      => meta.check_date(x, format)
                 WHEN 'DATE'     THEN 'meta.check_date('    + @column_name + ',' + CAST(@date_format AS NVARCHAR) + ') = 0'
                 --| NVARCHAR  => LEN(x) <= size
@@ -3027,6 +3189,66 @@ BEGIN
     EXEC meta.debug @@PROCID, 'DONE'
     RETURN
 END
+--| ==========================================================================================
+;
+
+CREATE PROCEDURE [meta].[agreement_trigger_add] --|
+--| ==========================================================================================
+--| Author:      Soren Bak Larsen
+--| Description: Add a customized trigger call to a specific agreement for notifying consumers
+--| Arguments:
+(
+    @agreement_id BIGINT,        --| ID of meta.agreement the trigger should be linked to
+    @trigger_id   INT,           --| Agreement specific trigger id (for log in error table)
+    @trigger_text NVARCHAR(1000),--| Call to stored procedure (or SQL that gets executed)
+    @description  NVARCHAR(1000) --| Optional description for trigger
+)
+AS 
+--| ------------------------------------------------------------------------------------------
+BEGIN
+    DECLARE @msg NVARCHAR(4000)
+    DECLARE @table  NVARCHAR(200)
+
+    --| Look up the init table from agreement_id
+    SELECT @table = '[' + table_schema + '].[' + table_name + ']'
+      FROM meta.agreement_stage_table_v
+     WHERE agreement_id = @agreement_id
+       AND stage_id = 0
+
+    IF @table IS NULL
+    BEGIN
+        RAISERROR ('Agreement [%I64d] does not exist', 11, 1, @agreement_id)
+        RETURN 2
+    END
+
+    SET @msg = 'Trigger [' + CAST(@trigger_id AS NVARCHAR) + ']=[' + @trigger_text + ']'
+    EXEC meta.debug @@PROCID, @msg
+
+    --| Determine update or insert trigger
+    DECLARE @count INT
+    SELECT @count = COUNT(*)
+      FROM meta.agreement_trigger
+     WHERE agreement_id = @agreement_id
+       AND trigger_id = @trigger_id
+
+    IF @count = 0
+        INSERT INTO meta.agreement_trigger
+               (agreement_id, trigger_id, trigger_text, description)
+        VALUES (@agreement_id, @trigger_id, @trigger_text, @description)
+    ELSE
+        UPDATE meta.agreement_trigger
+           SET trigger_text = @trigger_text
+         WHERE agreement_id = @agreement_id
+           AND trigger_id   = @trigger_id
+
+    -- | Return Success
+    EXEC meta.debug @@PROCID, 'DONE'
+    RETURN
+END
+;
+
+
+
 --| ==========================================================================================
 ;
 CREATE
@@ -3140,6 +3362,8 @@ END
 CREATE
 PROCEDURE[meta].[analysis_stag2repo] --|
 --| ==========================================================================================
+--| Author:      Soren Bak Larsen
+--| Create date: 2012-03-25
 --| Description: Analysis of data loaded into a column - return the SQL to pull the generated
 --|              meta data (column names, types, size, precision and scale) into the stag 
 --|              table
@@ -3225,7 +3449,8 @@ BEGIN
     -- | INT      rated  0
     -- | BIGINT   rated 10
     -- | NUMERIC  rated 20
-    -- | DATE     rated 30
+    -- | DATETIME rated 30
+    -- | DATE     rated 40
     -- | NVARCHAR rated 50
 
     -- | Get the cursor reading from dataset
@@ -3278,7 +3503,7 @@ BEGIN
         -- | j and i are one - based string pointers:
         --|
         --| j        i
-        -- | ..   / --------\  ..
+        --| ..   / --------\  ..
         --| .. , fieldvalue,  ..   < --data - string with separators(,)
         SET @j = 1
         SET @pos = 1
@@ -3297,7 +3522,8 @@ BEGIN
             SET @type = CASE WHEN @n_col NOT LIKE '%[^0-9]%' AND LEN(@col) < 5 THEN 'INT'
                                WHEN @n_col NOT LIKE '%[^0-9]%'                   THEN 'BIGINT'
                                WHEN ISNUMERIC(@n_col) = 1                        THEN 'NUMERIC'
-                               WHEN(meta.check_date(@col, 102) = 0
+                               WHEN  meta.check_date(@col, 126) = 0              THEN 'DATETIME'
+                               WHEN (meta.check_date(@col, 102) = 0
                                      OR meta.check_date(@col, 103) = 0
                                      OR meta.check_date(@col, 104) = 0
                                      OR meta.check_date(@col, 111) = 0)          THEN 'DATE'
@@ -3318,7 +3544,8 @@ BEGIN
                                WHEN 'INT'      THEN 0
                                WHEN 'BIGINT'   THEN 10
                                WHEN 'NUMERIC'  THEN 20
-                               WHEN 'DATE'     THEN 30
+                               WHEN 'DATETIME' THEN 30
+                               WHEN 'DATE'     THEN 40
                                WHEN 'NVARCHAR' THEN 50
                           END
 
@@ -3360,7 +3587,8 @@ BEGIN
                 WHEN 0  THEN 'INT'
                 WHEN 10 THEN 'BIGINT'
                 WHEN 20 THEN 'NUMERIC(' + CAST(w.digits + w.scale AS NVARCHAR) + ',' + CAST(w.scale AS NVARCHAR) + ')'
-                WHEN 30 THEN 'DATE'
+                WHEN 30 THEN 'DATETIME2'
+                WHEN 40 THEN 'DATE'
                 WHEN 50 THEN 'NVARCHAR(' + CAST(w.length AS NVARCHAR) + ')'
            END
       FROM(SELECT name, position FROM #analysis WHERE row = 1) h,
@@ -5101,26 +5329,235 @@ INSERT INTO [meta].[type]
            ,[rows_per_batch]
            ,[rowterminator]
            ,[tablock]
-           ,[errorfile])
-SELECT 'DEFAULT_CSV',        NULL, NULL, NULL, 'WIDECHAR', ';', 1, NULL, NULL, NULL, NULL, NULL, NULL, 1000, NULL, NULL, '\n', NULL, '{datafile}.error' UNION ALL
-SELECT 'DEFAULT_CSV_HEADER', NULL, NULL, NULL, 'WIDECHAR', ';', 2, NULL, NULL, NULL, NULL, NULL, NULL, 1000, NULL, NULL, '\n', NULL, '{datafile}.error' UNION ALL
-SELECT 'EXTERNAL',           NULL, NULL, NULL, 'WIDECHAR', ';', 1, NULL, NULL, NULL, NULL, NULL, NULL, 0,    NULL, NULL, '\n', NULL, '{datafile}.error' UNION ALL
-SELECT 'COMMA_CSV',          NULL, NULL, NULL, 'WIDECHAR', ',', 1, NULL, NULL, NULL, NULL, NULL, NULL, 1000, NULL, NULL, '\n', NULL, '{datafile}.error' UNION ALL
-SELECT 'COMMA_CSV_HEADER',   NULL, NULL, NULL, 'WIDECHAR', ',', 2, NULL, NULL, NULL, NULL, NULL, NULL, 1000, NULL, NULL, '\n', NULL, '{datafile}.error' UNION ALL
-SELECT 'MARS_LINK',          NULL, NULL, NULL, 'ORACLE',   ',', 1, NULL, NULL, NULL, NULL, NULL, NULL, 0,    NULL, NULL, '',   NULL, ''                 UNION ALL
-SELECT 'NLPNO_LINK',         NULL, NULL, NULL, 'MSSQL',    ',', 1, NULL, NULL, NULL, NULL, NULL, NULL, 0,    NULL, NULL, '',   NULL, ''                 UNION ALL
-SELECT 'COMMA_CSV_HEADER_C', NULL, NULL, NULL, 'CHAR',     ',', 2, NULL, NULL, NULL, NULL, NULL, NULL, 1000, NULL, NULL, '\n', NULL, '{datafile}.error' UNION ALL
-SELECT 'ANALYSIS_CSV',       NULL, NULL, NULL, 'WIDECHAR', ';', 2, NULL, NULL, NULL, NULL, NULL,100000, 0,    NULL, NULL, '\n', NULL, '{datafile}.error' UNION ALL
-SELECT 'COMMA_CSV_HEADER_ACP',NULL, NULL, 'ACP', 'WIDECHAR', ',', 2, NULL, NULL, NULL, NULL, NULL, NULL, 1000, NULL, NULL, '\n', NULL, '{datafile}.error'
+           ,[errorfile]
+           ,[data_source]
+           ,[errorfile_data_source])
+SELECT 'DEFAULT_CSV',          NULL, NULL, NULL, 'WIDECHAR', ';', 1, NULL, NULL, NULL, NULL, NULL, NULL, 1000, NULL, NULL, '\n', NULL, '{datafile}.error', NULL,NULL UNION ALL
+SELECT 'DEFAULT_CSV_HEADER',   NULL, NULL, NULL, 'WIDECHAR', ';', 2, NULL, NULL, NULL, NULL, NULL, NULL, 1000, NULL, NULL, '\n', NULL, '{datafile}.error', NULL,NULL UNION ALL
+SELECT 'EXTERNAL',             NULL, NULL, NULL, 'WIDECHAR', ';', 1, NULL, NULL, NULL, NULL, NULL, NULL, 0,    NULL, NULL, '\n', NULL, '{datafile}.error', NULL,NULL UNION ALL
+SELECT 'COMMA_CSV',            NULL, NULL, NULL, 'WIDECHAR', ',', 1, NULL, NULL, NULL, NULL, NULL, NULL, 1000, NULL, NULL, '\n', NULL, '{datafile}.error', NULL,NULL UNION ALL
+SELECT 'COMMA_CSV_HEADER',     NULL, NULL, NULL, 'WIDECHAR', ',', 2, NULL, NULL, NULL, NULL, NULL, NULL, 1000, NULL, NULL, '\n', NULL, '{datafile}.error', NULL,NULL UNION ALL
+SELECT 'ORACLE_LINK',          NULL, NULL, NULL, 'ORACLE',   ',', 1, NULL, NULL, NULL, NULL, NULL, NULL, 0,    NULL, NULL, '',   NULL, ''                , NULL,NULL UNION ALL
+SELECT 'MSSQL_LINK',           NULL, NULL, NULL, 'MSSQL',    ',', 1, NULL, NULL, NULL, NULL, NULL, NULL, 0,    NULL, NULL, '',   NULL, ''                , NULL,NULL UNION ALL
+SELECT 'COMMA_CSV_HEADER_C',   NULL, NULL, NULL, 'CHAR',     ',', 2, NULL, NULL, NULL, NULL, NULL, NULL, 1000, NULL, NULL, '\n', NULL, '{datafile}.error', NULL,NULL UNION ALL
+SELECT 'ANALYSIS_CSV',         NULL, NULL, NULL, 'WIDECHAR', ';', 2, NULL, NULL, NULL, NULL, NULL,100000, 0,   NULL, NULL, '\n', NULL, '{datafile}.error', NULL,NULL
 ;
 -- Add initial system user
 EXEC meta.user_add 'system', 'System User', 'Owner of all agreements'
 ;
+EXEC meta.user_add 'Everyone', 'Everyone', 'Default Azure BLOB/FILE Storage user'
+;
 EXEC meta.user_group_add 1, 1
+;
+EXEC meta.user_group_add 2, 1
 ;
 
 -- ----------------------------------------------------------------------------------------------------------------------------------
 -- +migrate Down
 -- ----------------------------------------------------------------------------------------------------------------------------------
-PRINT 'N/A'
+DROP PROCEDURE[meta].[user_group_delete]
+;
+DROP PROCEDURE[meta].[user_group_add]
+;
+DROP PROCEDURE[meta].[user_add]
+;
+DROP PROCEDURE[meta].[type_map_add]
+;
+DROP PROCEDURE[meta].[template_file2temp]
+;
+DROP PROCEDURE[meta].[table_create]
+;
+DROP PROCEDURE[meta].[table_add]
+;
+DROP PROCEDURE[meta].[operation_add]
+;
+DROP PROCEDURE[meta].[log]
+;
+DROP PROCEDURE[meta].[group_agreement_delete]
+;
+DROP PROCEDURE[meta].[group_agreement_add]
+;
+DROP PROCEDURE[meta].[group_add]
+;
+DROP PROCEDURE[meta].[get_error_summary]
+;
+DROP PROCEDURE[meta].[get_error_detail]
+;
+DROP PROCEDURE[meta].[get_data]
+;
+DROP PROCEDURE[meta].[generic_temp2stag]
+;
+DROP PROCEDURE[meta].[generic_stag2repo]
+;
+DROP PROCEDURE[meta].[generic_link2temp]
+;
+DROP PROCEDURE[meta].[generic_file2temp]
+;
+DROP PROCEDURE[meta].[generic_big2temp]
+;
+DROP PROCEDURE[meta].[delivery_validate]
+;
+DROP PROCEDURE[meta].[delivery_publish]
+;
+DROP PROCEDURE[meta].[delivery_load]
+;
+DROP PROCEDURE[meta].[delivery_find]
+;
+DROP PROCEDURE[meta].[delivery_delete]
+;
+DROP PROCEDURE[meta].[delivery_add]
+;
+DROP PROCEDURE[meta].[debug]
+;
+DROP PROCEDURE[meta].[audit_add]
+;
+DROP PROCEDURE[meta].[analysis_stag2repo]
+;
+DROP PROCEDURE[meta].[analysis_file2temp]
+;
+DROP PROCEDURE[meta].[agreement_rule_add_all]
+;
+DROP PROCEDURE[meta].[agreement_rule_add]
+;
+DROP PROCEDURE[meta].[agreement_find]
+;
+DROP PROCEDURE[meta].[agreement_dump]
+;
+DROP PROCEDURE[meta].[agreement_delete]
+;
+DROP PROCEDURE[meta].[agreement_attribute_add]
+;
+DROP PROCEDURE[meta].[agreement_add]
+;
+DROP PROCEDURE [meta].delivery_trigger
+;
+DROP PROCEDURE [meta].agreement_trigger_add
+;
+DROP PROCEDURE [meta].get_data_columns;
+;
+DROP PROCEDURE[dbo].[define]
+;
+ALTER TABLE[meta].[operation] DROP CONSTRAINT[FK_operation_status]
+;
+ALTER TABLE[meta].[audit] DROP CONSTRAINT[FK_audit_table]
+;
+ALTER TABLE[meta].[audit] DROP CONSTRAINT[FK_audit_stage]
+;
+ALTER TABLE[meta].[user_group] DROP CONSTRAINT[FK_user_group_user]
+;
+ALTER TABLE[meta].[user_group] DROP CONSTRAINT[FK_user_group_group]
+;
+ALTER TABLE[meta].[delivery] DROP CONSTRAINT[FK_delivery_user]
+;
+ALTER TABLE [meta].[agreement_trigger] DROP CONSTRAINT [FK_agreement_trigger_agreement]
+;
+ALTER TABLE[meta].[agreement] DROP CONSTRAINT[FK_agreement_user]
+;
+ALTER TABLE[meta].[agreement] DROP CONSTRAINT[FK_agreement_type]
+;
+ALTER TABLE[meta].[group_agreement] DROP CONSTRAINT[FK_group_agreement_group]
+;
+ALTER TABLE[meta].[group_agreement] DROP CONSTRAINT[FK_group_agreement_agreement]
+;
+ALTER TABLE[meta].[group_agreement] DROP CONSTRAINT[FK_group_agreement_access]
+;
+ALTER TABLE[meta].[agreement] DROP CONSTRAINT[FK_agreement_group]
+;
+ALTER TABLE[meta].[delivery] DROP CONSTRAINT[FK_delivery_agreement]
+;
+ALTER TABLE[meta].[audit] DROP CONSTRAINT[FK_audit_delivery]
+;
+ALTER TABLE[meta].[agreement_attribute] DROP CONSTRAINT[FK_agreement_attribute_attribute]
+;
+ALTER TABLE[meta].[agreement_attribute] DROP CONSTRAINT[FK_agreement_attribute_agreement]
+;
+DROP TABLE[meta].[agreement_rule]
+;
+DROP FUNCTION[meta].[get_agreements]
+;
+DROP VIEW[meta].[user_v]
+;
+DROP VIEW[meta].[user_group_v]
+;
+DROP VIEW[meta].[user_access_v]
+;
+DROP TABLE[meta].[user_group]
+;
+DROP VIEW[meta].[usage_v]
+;
+DROP TABLE[meta].[usage_log]
+;
+DROP VIEW[meta].[link_v]
+;
+DROP TABLE[meta].[link]
+;
+DROP VIEW[meta].[group_access_v]
+;
+DROP TABLE[meta].[agreement_trigger]
+;
+DROP TABLE[meta].[group_agreement]
+;
+DROP TABLE[meta].[access]
+;
+DROP VIEW[meta].[delivery_id_audit_operation_v]
+;
+DROP TABLE[meta].[status]
+;
+DROP VIEW[meta].[column_mapping_v]
+;
+DROP TABLE[meta].[type_map]
+;
+DROP VIEW[meta].[agreement_stage_table_v]
+;
+DROP TABLE[meta].[table]
+;
+DROP VIEW[meta].[agreement_delivery_max_audit_v]
+;
+DROP TABLE[meta].[stage]
+;
+DROP TABLE[meta].[operation]
+;
+DROP VIEW[meta].[agreement_delivery_count_v]
+;
+DROP TABLE[meta].[user]
+;
+DROP TABLE[meta].[type]
+;
+DROP TABLE[meta].[group]
+;
+DROP TABLE[meta].[delivery]
+;
+DROP TABLE[meta].[audit]
+;
+DROP VIEW[meta].[agreement_attribute_v]
+;
+DROP TABLE[meta].[attribute]
+;
+DROP TABLE[meta].[agreement_attribute]
+;
+DROP TABLE[meta].[agreement]
+;
+DROP FUNCTION[meta].[user_access]
+;
+DROP FUNCTION[meta].[table_row_len]
+;
+DROP FUNCTION[meta].[split]
+;
+DROP FUNCTION[meta].[in_group]
+;
+DROP FUNCTION[meta].[get_status_date]
+;
+DROP FUNCTION[meta].[check_numeric]
+;
+DROP FUNCTION[meta].[check_date]
+;
+DROP SCHEMA[meta]
+;
+DROP SCHEMA[init]
+;
+DROP SCHEMA[temp]
+;
+DROP SCHEMA[stag]
+;
+DROP SCHEMA[repo]
 ;

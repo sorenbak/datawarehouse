@@ -23,7 +23,7 @@ func main() {
 		fmt.Println("Use SSL")
 		app.Run(iris.AutoTLS(envy.Get("HTTPSADDR", ""), envy.Get("HTTPSFQN", ""), envy.Get("HTTPSEMAIL", "")))
 	} else {
-		app.Run(iris.Addr(envy.Get("HTTPADDR", ":8080")))
+		app.Run(iris.Addr(envy.Get("HTTPADDR", ":8080")), iris.WithoutPathCorrection)
 	}
 	//Daemon()
 }

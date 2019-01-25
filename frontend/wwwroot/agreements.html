@@ -7,7 +7,6 @@
 
   <body>
     <div class="container-fluid">
-      <h1>Agreements</h1>
       List of existing agreements in the repository. Each agreement
       corresponds to a file or a database import from an external
       system. Click on the name to see details or the number of
@@ -31,6 +30,7 @@
     </div>
     
     <script src="/lib/jquery/dist/jquery.js"></script>
+    <script src="/lib/navbar.js"></script>
     <script>
       var p     = new URLSearchParams(window.location.search);
       var now   = new Date();
@@ -46,13 +46,12 @@
               $('#loader').remove()
               $.each(data, function(i, e){ 
                   $('#list')
-                      .append(
-                          '<tr>'
+                      .append('<tr>'
                               +`<td><a class="btn btn-block btn-default" href="agreement_detail.html?agreement_id=${e.id}"><samp>${e.name}</samp></a></td>`
                               +`<td>${e.group_name}</td>`
                               +`<td>${e.description}</td>`
                               +`<td>${e.createdtm.substring(0, 19)}</td>`
-                              +`<td title="${e.diff_pct}"><a class="btn btn-block btn-default" href="deliveries.html?agreement_id=${e.id}">${e.ok}</a></td>`
+                              +`<td title="${e.diff_pct}"><a class="btn btn-block btn-default" href="agreement_deliveries.html?agreement_id=${e.id}">${e.ok}</a></td>`
                               +'</tr>') })
           } 
       });

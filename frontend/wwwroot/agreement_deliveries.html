@@ -1,16 +1,14 @@
 <html>
   <head>
-    <title>Deliveries</title>
     <link rel="stylesheet" type="text/css" href="/lib/bootstrap/dist/css/bootstrap.css">
   </head>
 
   <body>
     <div class="container-fluid">
-      <div id="header"></div>
       
       <table class="table table-sm table-condensed table-hover" id="list">
         <tr>
-          <th>Agreement</th><th>Delivery</th><th>Owner</th><th>Status Date</th>
+          <th>Agreement</th><th>Delivery</th><th></th><th>Owner</th><th>Status Date</th>
           <th>Size</th><th>Stage</th><th>Audit Created</th><th>Type</th><th>Log</th>
         </tr>
       </table>
@@ -18,22 +16,22 @@
     </div>
     
     <script src="/lib/jquery/dist/jquery.js"></script>
-    <script src="/lib/header.js"></script>
+    <script src="/lib/navbar.js"></script>
     <script>
       var p  = new URLSearchParams(window.location.search)
       var agreement_id = p.get('agreement_id') || 0
       var user_id      = p.get('user_id')      || 1
       var page         = p.get('page')         || 0
       var type         = user_id ? 'user' : 'agreement'
-      header('Deliveries', `/api/delivery/agreement/${agreement_id}`, page)
+      pagination(`?agreement_id=${agreement_id}`, page)
       $.ajax({ 
           type    : 'GET',
           url     : `/api/delivery/agreement/${agreement_id}?page=${page}`,
           dataType: 'json',
-          error  :function () { $('#loader').addClass('alert-danger').html('Error retrieving data') },
+          error:function () { $('#loader').addClass('alert-danger').html(`[${this.url}]: ${arguments[2]}`) },
           success:function(data) {
+              $('#loader').remove()
               $.each(data, function(i, e){
-                  $('#loader').remove()
                   var cl = 'primary'
                   if (e.stage_name == 'init'){ cl = 'info'      }
                   if (e.stage_name == 'temp'){ cl = 'warning'   }
@@ -41,10 +39,10 @@
                   if (e.stage_name == 'repo'){ cl = 'success'   }
                   if (e.status_id  == 3     ){ cl = 'danger'    }
                   $('#list')
-                      .append(
-                          `<tr class="alert alert-${cl}">`
+                      .append(`<tr class="alert alert-${cl}">`
                               +`<td><a href="agreement_detail.html?agreement_id=${e.agreement_id}"><samp>${e.agreement_name}</samp></a></td>`
-                              +`<td><a href="delivery_detail.html?delivery_id=${e.delivery_id}"><samp>${e.delivery_name}</samp></a></td>`
+                              +`<td><a href="agreement_delivery_detail.html?delivery_id=${e.delivery_id}"><samp>${e.delivery_name}</samp></a></td>`
+                              +`<td>${e.status_id == 1 ? '<a href="/api/delivery/download/json/'+e.agreement_name+'/'+e.delivery_id+'"><img height="20" src="lib/img/download.png"/></a>' : ''}</td>`
                               +`<td>${e.delivery_owner}</td>`
                               +`<td>${e.delivery_status_date}</td>`
                               +`<td>${e.delivery_size}</td>`

@@ -56,6 +56,10 @@ func DwApp(db repository.Dber) *iris.Application {
 	api.Get("/agreement/trigger/{agreement_id:int64}", hero.Handler(controllers.AgreementTrigger))
 	// Delivery
 	api.Get("/delivery/agreement/{agreement_id:int64}", hero.Handler(controllers.DeliveryList))
+	api.Get("/delivery/detail/{delivery_id:int64}", hero.Handler(controllers.DeliveryDetail))
+	api.Get("/delivery/operation/{delivery_id:int64}", hero.Handler(controllers.DeliveryOperation))
+	api.Get("/delivery/download/json/{agreement_name:string}/{delivery_id:int64}}", hero.Handler(controllers.DeliveryDownloadJson))
+	api.Delete("/delivery/delete/{delivery_id:int64}}", hero.Handler(controllers.DeliveryDelete))
 
 	return app
 }
