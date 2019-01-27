@@ -2,7 +2,7 @@ package controllers
 
 import (
 	"github.com/kataras/iris"
-	"github.com/sorenbak/datawarehouse/repository"
+	"github.com/sorenbak/datawarehouse/frontend/repository"
 )
 
 func AgreementAttribute(c iris.Context, rep repository.Repository, agreement_id int64) string {

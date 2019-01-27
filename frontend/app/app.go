@@ -27,9 +27,9 @@ import (
 	"github.com/kataras/iris/context"
 	"github.com/kataras/iris/core/router"
 	"github.com/kataras/iris/hero"
-	"github.com/sorenbak/datawarehouse/auth"
-	"github.com/sorenbak/datawarehouse/controllers"
-	"github.com/sorenbak/datawarehouse/repository"
+	"github.com/sorenbak/datawarehouse/frontend/auth"
+	"github.com/sorenbak/datawarehouse/frontend/controllers"
+	"github.com/sorenbak/datawarehouse/frontend/repository"
 )
 
 func DwApp(db repository.Dber) *iris.Application {

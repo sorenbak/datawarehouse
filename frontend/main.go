@@ -6,8 +6,8 @@ package main
 import (
 	"fmt"
 
-	"github.com/sorenbak/datawarehouse/app"
-	"github.com/sorenbak/datawarehouse/repository"
+	"github.com/sorenbak/datawarehouse/frontend/app"
+	"github.com/sorenbak/datawarehouse/frontend/repository"
 
 	"github.com/gobuffalo/envy"
 	"github.com/kataras/iris"
