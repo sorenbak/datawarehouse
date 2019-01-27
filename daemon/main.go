@@ -1,6 +1,8 @@
 package main
 
 import (
+	"fmt"
+	"io/ioutil"
 	"log"
 	"os"
 	"path/filepath"
@@ -8,14 +10,23 @@ import (
 	"time"
 
 	"github.com/gobuffalo/envy"
+	"github.com/sorenbak/datawarehouse/repository"
 )
 
-var SLEEPSECS, _ = strconv.Atoi(envy.Get("SLEEPSECS", "60"))
-var INBOX = envy.Get("INBOX", "./in")
-var OUTBOX = envy.Get("OUTBOX", "./out")
+var DB repository.Repository
+var SLEEPSECS int
+var INBOX, OUTBOX string
+
+// Make daemon testable
+func GetConfig() {
+	DB = repository.NewRepository(repository.NewDb())
+	SLEEPSECS, _ = strconv.Atoi(envy.Get("SLEEPSECS", "60"))
+	INBOX = envy.Get("INBOX", "./in")
+	OUTBOX = envy.Get("OUTBOX", "./in")
+}
 
 func main() {
-
+	GetConfig()
 	for true {
 		// Loop over files
 		files := ReadINBOX()
@@ -86,21 +97,40 @@ func MoveToOUTBOX(file os.FileInfo, path string) {
 			log.Fatalf("Could not create outbox [%s]: %v\n", OUTBOX, err)
 		}
 	}
-	dest := OUTBOX + path + "/" + file.Name()
-	err := os.Rename(file.Name(), dest)
+	src := INBOX + path + "/" + file.Name()
+	dst := OUTBOX + path + "/" + file.Name()
+	err := os.Rename(src, dst)
 	if err != nil {
-		log.Fatalf("Could not rename [%s]->[%s]: %v\n", file.Name(), dest, err)
+		log.Fatalf("Could not rename [%s]->[%s]: %v\n", src, dst, err)
 	}
 }
 
-func ProcessCsv(file os.FileInfo) error {
+func ProcessAgreement(file os.FileInfo) {
 	SetLog(file)
-	log.Println("This file is a CSV")
-	return nil
+	log.Printf("Load agreement file [%s]\n", file.Name())
+	sql, err := ioutil.ReadFile(INBOX + "/" + file.Name())
+	if err != nil {
+		log.Println("Error reading agreement contents: ", err)
+	}
+	_, err = DB.Exec(string(sql))
+	if err != nil {
+		log.Println("Error executing agreement SQL: ", err)
+	}
+	MoveToOUTBOX(file, "")
 }
 
-func ProcessAgreement(file os.FileInfo) error {
+func ProcessCsv(file os.FileInfo) {
 	SetLog(file)
-	log.Println("")
-	return nil
+	log.Printf("Lookup agreement for [%s]\n", file.Name())
+	stage := 1
+	var agreement_id int
+	var procedure string
+	_, err := DB.Query("EXEC meta.agreement_find $1, $2, $3, $4", 0, file.Name(), stage, &agreement_id, &procedure)
+	if err != nil {
+		log.Printf("Error finding agreement [%s]: %v", file.Name(), err)
+		return
+	}
+	fmt.Println(agreement_id, procedure)
+
+	return
 }
