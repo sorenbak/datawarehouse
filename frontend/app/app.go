@@ -29,7 +29,7 @@ import (
 	"github.com/kataras/iris/hero"
 	"github.com/sorenbak/datawarehouse/frontend/auth"
 	"github.com/sorenbak/datawarehouse/frontend/controllers"
-	"github.com/sorenbak/datawarehouse/frontend/repository"
+	"github.com/sorenbak/datawarehouse/repository"
 )
 
 func DwApp(db repository.Dber) *iris.Application {

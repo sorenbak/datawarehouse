@@ -2,7 +2,7 @@ package controllers
 
 import (
 	"github.com/kataras/iris"
-	"github.com/sorenbak/datawarehouse/frontend/repository"
+	"github.com/sorenbak/datawarehouse/repository"
 )
 
 // Details for an agreement
