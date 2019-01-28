@@ -44,9 +44,13 @@ from private hosting to github.
 # Setup
 
 Download the `sql-migrate` tool (see [here for
-details](https://github.com/rubenv/sql-migrate)):
+details](https://github.com/rubenv/sql-migrate)) along with the APIs
+from Microsoft for accessing Azure File and BLOB storage:
+
 ````
 go get -v github.com/rubenv/sql-migrate/...
+go get -v github.com/Azure/azure-storage-blob-go/azblob
+go get -v github.com/Azure/azure-storage-file-go/azfile
 ````
 
 Please edit settings below according to your own needs

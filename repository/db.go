@@ -1,3 +1,6 @@
+// Package repository provides a stripped down database connection pool with generic
+// result sets returned either as tuples of strings or converted directly to JSON
+// TODO: Make use of context concept in order to allow cancellation of long running queries
 package repository
 
 import (
@@ -9,8 +12,9 @@ import (
 	"github.com/gobuffalo/envy"
 )
 
+// SingleDb is exported - should ONLY be used in extreme cases where necessary
+var SingleDb *sql.DB
 var once sync.Once
-var singleDb *sql.DB
 
 type Dber interface {
 	Query(query string, limit int, args ...interface{}) (results []interface{}, err error)
@@ -19,12 +23,13 @@ type Dber interface {
 	Rollback() error
 }
 
-// Singleton db holding connection
+// Db is a singleton struct holding connection pool
 type Db struct {
 	db *sql.DB
 	tx *sql.Tx
 }
 
+// NewDb creates and populates singleton database connection pool (or reuse existing on)
 func NewDb() *Db {
 	once.Do(func() {
 		fmt.Println("Connecting singleton to database...")
@@ -40,9 +45,9 @@ func NewDb() *Db {
 			fmt.Printf("Cannot connect to host/db [%s]\n", cstr)
 			return
 		}
-		singleDb = db
+		SingleDb = db
 	})
-	return &Db{db: singleDb}
+	return &Db{db: SingleDb}
 }
 
 func (db *Db) Commit() (err error) {

@@ -1,8 +1,6 @@
 package main
 
 import (
-	"fmt"
-	"io/ioutil"
 	"log"
 	"os"
 	"path/filepath"
@@ -10,127 +8,165 @@ import (
 	"time"
 
 	"github.com/gobuffalo/envy"
+	"github.com/sorenbak/datawarehouse/file"
 	"github.com/sorenbak/datawarehouse/repository"
 )
 
-var DB repository.Repository
-var SLEEPSECS int
-var INBOX, OUTBOX string
+var db repository.Repository
+var sleepsecs int
+var filer file.DwFiler
 
 // Make daemon testable
 func GetConfig() {
-	DB = repository.NewRepository(repository.NewDb())
-	SLEEPSECS, _ = strconv.Atoi(envy.Get("SLEEPSECS", "60"))
-	INBOX = envy.Get("INBOX", "./in")
-	OUTBOX = envy.Get("OUTBOX", "./in")
+	db = repository.NewRepository(repository.NewDb())
+	envy.Load()
+	sleepsecs, _ = strconv.Atoi(envy.Get("SLEEPSECS", "60"))
+	blob := envy.Get("BLOB", "")
+	var err error
+	log.Println("Applying BLOB token to database")
+	if blob != "" {
+		_, err = db.Exec("EXEC meta.azure_credentials $1, 'DwAzureCredential', 'DwAzureStorage'", blob)
+	} else {
+		_, err = db.Exec("EXEC meta.azure_credentials $1, NULL, NULL", blob)
+	}
+	if err != nil {
+		log.Fatal("meta.azure_credentials failed: ", err)
+	}
+
+	filer = file.NewDwFiler(envy.Get("INBOX", "./in/"), envy.Get("OUTBOX", "./out/"), blob)
 }
 
 func main() {
 	GetConfig()
 	for true {
 		// Loop over files
-		files := ReadINBOX()
+		files := filer.ReadInbox()
 		for _, file := range files {
-			log.SetOutput(os.Stdout)
-			log.Printf("Processing file [%s]\n", file.Name())
-			ext := filepath.Ext(file.Name())
+			log.Printf("Processing file [%s]\n", file.Name)
+			ext := filepath.Ext(file.Name)
+			// Switch on file extension
 			switch ext {
 			case ".csv":
 				ProcessCsv(file)
 			case ".sql":
 				ProcessAgreement(file)
 			default:
-				log.Printf(" |_ ignored [%s] ", ext)
+				log.Printf(" |_ ignored [%s]\n", ext)
 			}
-
-			// 1. if text      inbox -> call handle_csv_file
-			// 2. if agreement inbox -> call handle_agreement_file
-			// Check file is released (net file fileid /CLOSE)
-			// Check exit code from 1. and 2. above
-			//   if OK - write success and move file to out/ok
-			//   if ERR - write error and move file to out/err
-			// Close log file
+			log.SetOutput(os.Stdout)
 		}
 
 		// Sleep a reasonable amount of time
-		log.SetOutput(os.Stdout)
-		log.Printf("Wait [%d] secs\n", SLEEPSECS)
-		time.Sleep(time.Duration(SLEEPSECS) * time.Second)
+		log.Printf("Wait [%d] secs\n", sleepsecs)
+		time.Sleep(time.Duration(sleepsecs) * time.Second)
 	}
 }
 
-func SetLog(file os.FileInfo) {
+func SetLog(file file.DwFile) {
 	// Redirect output to log file in outbox
-	logfilename := OUTBOX + "/" + file.Name() + ".log"
-	logfile, err := os.Create(logfilename)
-	if err != nil {
-		log.Fatalf("Could not write logfile [%s]: %v\n", logfilename, err)
-	}
-	log.SetOutput(logfile)
+	//	logfilename := OUTBOX + "/" + file.Name() + ".log"
+	//	logfile, err := os.Create(logfilename)
+	//	if err != nil {
+	//		log.Fatalf("Could not write logfile [%s]: %v\n", logfilename, err)
+	//	}
+	//	log.SetOutput(logfile)
 }
 
-func ReadINBOX() []os.FileInfo {
-	if _, err := os.Stat(INBOX); os.IsNotExist(err) {
-		err := os.MkdirAll(INBOX, os.ModePerm)
-		if err != nil {
-			log.Fatalf("Could not create inbox [%s]: %v\n", INBOX, err)
-		}
-	}
-	// Get files from container (file storage or file system?)
-	inbox, err := os.Open(INBOX)
-	if err != nil {
-		log.Fatalf("Could not open inbox [%s]: %v\n", INBOX, err)
-	}
-	files, err := inbox.Readdir(-1)
-	inbox.Close()
-	if err != nil {
-		log.Printf("Could not read inbox [%s]: %v\n", INBOX, err)
-	}
-
-	return files
-}
-
-func MoveToOUTBOX(file os.FileInfo, path string) {
-	if _, err := os.Stat(OUTBOX); os.IsNotExist(err) {
-		err := os.MkdirAll(OUTBOX, os.ModePerm)
-		if err != nil {
-			log.Fatalf("Could not create outbox [%s]: %v\n", OUTBOX, err)
-		}
-	}
-	src := INBOX + path + "/" + file.Name()
-	dst := OUTBOX + path + "/" + file.Name()
-	err := os.Rename(src, dst)
-	if err != nil {
-		log.Fatalf("Could not rename [%s]->[%s]: %v\n", src, dst, err)
-	}
-}
-
-func ProcessAgreement(file os.FileInfo) {
+func ProcessAgreement(file file.DwFile) {
 	SetLog(file)
-	log.Printf("Load agreement file [%s]\n", file.Name())
-	sql, err := ioutil.ReadFile(INBOX + "/" + file.Name())
+	defer filer.MoveFile(file)
+	log.Printf("Load agreement file [%s]\n", file.Name)
+	sql, err := filer.ReadFile(file)
 	if err != nil {
 		log.Println("Error reading agreement contents: ", err)
-	}
-	_, err = DB.Exec(string(sql))
-	if err != nil {
-		log.Println("Error executing agreement SQL: ", err)
-	}
-	MoveToOUTBOX(file, "")
-}
-
-func ProcessCsv(file os.FileInfo) {
-	SetLog(file)
-	log.Printf("Lookup agreement for [%s]\n", file.Name())
-	stage := 1
-	var agreement_id int
-	var procedure string
-	_, err := DB.Query("EXEC meta.agreement_find $1, $2, $3, $4", 0, file.Name(), stage, &agreement_id, &procedure)
-	if err != nil {
-		log.Printf("Error finding agreement [%s]: %v", file.Name(), err)
 		return
 	}
-	fmt.Println(agreement_id, procedure)
+	_, err = db.Exec(string(sql))
+	if err != nil {
+		log.Println("Error executing agreement SQL: ", err)
+		return
+	}
+}
 
-	return
+func ProcessCsv(file file.DwFile) {
+	SetLog(file)
+	defer filer.MoveFile(file)
+	agreement_id := agreementFind(file)
+	if agreement_id == "" {
+		return
+	}
+	log.Printf("Loading CSV file [%s] using agreement_id [%s]\n", file.Name, agreement_id)
+	res := deliveryLoad(file)
+	if res != 0 {
+		return
+	}
+	res = deliveryValidate(file)
+	if res != 0 {
+		return
+	}
+	res = deliveryPublish(file)
+	if res != 0 {
+		return
+	}
+}
+
+func deliveryLoad(file file.DwFile) int {
+	filer.PrepareFile(file)
+	// No such thing as owner cross platform - neither in Azure where everything is owned by the Everyone user
+	res, err := db.Exec("EXEC meta.delivery_load $1, $2, $3, $4", file.Path, file.Name, "system", file.Size)
+	if err != nil {
+		log.Println("deliveryLoad: ", err)
+		return 1
+	}
+	if len(res) > 0 {
+		log.Println("deliveryLoad returned: ", res[0])
+		return 0
+	}
+	return 0
+}
+
+func deliveryValidate(file file.DwFile) int {
+	res, err := db.Exec("meta.delivery_validate $1", file.Name)
+	if err != nil {
+		log.Println("deliveryValidate: ", err)
+		return 1
+	}
+	if len(res) > 0 {
+		log.Println("deliveryValdiate returned: ", res[0])
+		return 0
+	}
+	return 0
+}
+
+func deliveryPublish(file file.DwFile) int {
+	res, err := db.Exec("meta.delivery_publish $1", file.Name)
+	if err != nil {
+		log.Println("deliveryPublish: ", err)
+		return 1
+	}
+	if len(res) > 0 {
+		log.Println("deliveryPublish returned: ", res[0])
+		return 0
+	}
+	return 0
+}
+
+func agreementFind(file file.DwFile) (agreement_id string) {
+	log.Printf("Lookup agreement for [%s]\n", file.Name)
+	stage_id := 1
+	res, err := db.Exec(`
+    DECLARE @agreement_id INT
+    DECLARE @procedure    NVARCHAR(100) 
+    EXEC meta.agreement_find $1, $2, @agreement_id OUT, @procedure OUT
+    SELECT @agreement_id AS agreement_id`, file.Name, stage_id)
+	if err != nil {
+		log.Println(err)
+		return ""
+	}
+	if len(res) == 0 {
+		log.Printf("Agreement not found for file [%s]\n", file.Name)
+		return ""
+	}
+	data := res[0].(map[string]interface{})
+	return data["agreement_id"].(string)
 }

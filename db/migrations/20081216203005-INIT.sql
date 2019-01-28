@@ -1503,8 +1503,7 @@ BEGIN
        AND u.attribute_name = 'NVARCHAR_MAX_LOAD'
 
     -- + Prepend path to form the full name of the delivery
-    IF @data_source IS NULL     AND COALESCE(@path, '') <> '' SET @name = @path + '\' + @name
-    IF @data_source IS NOT NULL AND COALESCE(@path, '') <> '' SET @name = @path + '/' + @name
+    IF COALESCE(@path, '') <> '' SET @name = @path + @name
 
     -- + Set the field limiter to \0 if row size of target table exceeds 4000 (NVARCHAR) due to
     --+ hard limit of 8060 in MS SQL. This is optional as some data deliveries manages - others
@@ -5352,82 +5351,120 @@ EXEC meta.user_group_add 1, 1
 EXEC meta.user_group_add 2, 1
 ;
 
+-- ----------------------------------------------------------
+-- Administrative procedure for updating SAS access to BLOB
+-- ----------------------------------------------------------
+CREATE PROCEDURE meta.azure_credentials (@sasuri NVARCHAR(MAX), @credname NVARCHAR(100), @extname NVARCHAR(100)) AS
+BEGIN 
+    IF @credname IS NULL OR @extname IS NULL
+    BEGIN
+        UPDATE meta.[type] SET data_source = NULL, errorfile_data_source = NULL
+        RETURN
+    END 
+
+    -- TODO: Master password - a little reckless here?
+    IF NOT EXISTS (SELECT * FROM sys.symmetric_keys WHERE name LIKE '%DatabaseMasterKey%')
+        CREATE MASTER KEY ENCRYPTION BY PASSWORD = 'F00Bar&Baz'
+
+    DECLARE @uri NVARCHAR(MAX) = SUBSTRING(@sasuri, 0, CHARINDEX('?',@sasuri))
+    DECLARE @tok NVARCHAR(MAX) = SUBSTRING(@sasuri, CHARINDEX('?', @sasuri) + 1, LEN(@sasuri))
+
+    -- Need to be dynamic SQL (sigh)
+    DECLARE @sql NVARCHAR(MAX) = 'DATABASE SCOPED CREDENTIAL ' + @credname + ' WITH IDENTITY = ''SHARED ACCESS SIGNATURE'', SECRET = ''' + @tok + ''''
+    IF EXISTS (SELECT 1 FROM sys.database_scoped_credentials WHERE name = @credname)
+        SET @sql = 'ALTER ' + @sql
+    ELSE
+        SET @sql = 'CREATE ' + @sql
+    EXEC sp_executesql @sql
+
+    -- ALSO Need to be dynamic SQL - even more stupid WITH/SET syntax (sigh-sigh)
+    IF EXISTS (SELECT 1 FROM sys.external_data_sources WHERE name = @extname)
+        SET @sql = 'ALTER EXTERNAL DATA SOURCE '+ @extname +' SET LOCATION = ''' + @uri + ''', CREDENTIAL = '+ @credname
+    ELSE
+        SET @sql = 'CREATE EXTERNAL DATA SOURCE '+ @extname +' WITH (TYPE = BLOB_STORAGE, LOCATION = ''' + @uri + ''', CREDENTIAL = '+ @credname +')'
+    EXEC sp_executesql @sql
+
+    UPDATE meta.[type] SET data_source = @extname, errorfile_data_source = @extname
+END
+;
 -- ----------------------------------------------------------------------------------------------------------------------------------
 -- +migrate Down
 -- ----------------------------------------------------------------------------------------------------------------------------------
-DROP PROCEDURE[meta].[user_group_delete]
+DROP PROCEDURE [meta].[azure_credentials]
 ;
-DROP PROCEDURE[meta].[user_group_add]
+DROP PROCEDURE [meta].[user_group_delete]
 ;
-DROP PROCEDURE[meta].[user_add]
+DROP PROCEDURE [meta].[user_group_add]
 ;
-DROP PROCEDURE[meta].[type_map_add]
+DROP PROCEDURE [meta].[user_add]
 ;
-DROP PROCEDURE[meta].[template_file2temp]
+DROP PROCEDURE [meta].[type_map_add]
 ;
-DROP PROCEDURE[meta].[table_create]
+DROP PROCEDURE [meta].[template_file2temp]
 ;
-DROP PROCEDURE[meta].[table_add]
+DROP PROCEDURE [meta].[table_create]
 ;
-DROP PROCEDURE[meta].[operation_add]
+DROP PROCEDURE [meta].[table_add]
 ;
-DROP PROCEDURE[meta].[log]
+DROP PROCEDURE [meta].[operation_add]
 ;
-DROP PROCEDURE[meta].[group_agreement_delete]
+DROP PROCEDURE [meta].[log]
 ;
-DROP PROCEDURE[meta].[group_agreement_add]
+DROP PROCEDURE [meta].[group_agreement_delete]
 ;
-DROP PROCEDURE[meta].[group_add]
+DROP PROCEDURE [meta].[group_agreement_add]
 ;
-DROP PROCEDURE[meta].[get_error_summary]
+DROP PROCEDURE [meta].[group_add]
 ;
-DROP PROCEDURE[meta].[get_error_detail]
+DROP PROCEDURE [meta].[get_error_summary]
 ;
-DROP PROCEDURE[meta].[get_data]
+DROP PROCEDURE [meta].[get_error_detail]
 ;
-DROP PROCEDURE[meta].[generic_temp2stag]
+DROP PROCEDURE [meta].[get_data]
 ;
-DROP PROCEDURE[meta].[generic_stag2repo]
+DROP PROCEDURE [meta].[generic_temp2stag]
 ;
-DROP PROCEDURE[meta].[generic_link2temp]
+DROP PROCEDURE [meta].[generic_stag2repo]
 ;
-DROP PROCEDURE[meta].[generic_file2temp]
+DROP PROCEDURE [meta].[generic_link2temp]
 ;
-DROP PROCEDURE[meta].[generic_big2temp]
+DROP PROCEDURE [meta].[generic_file2temp]
 ;
-DROP PROCEDURE[meta].[delivery_validate]
+DROP PROCEDURE [meta].[generic_big2temp]
 ;
-DROP PROCEDURE[meta].[delivery_publish]
+DROP PROCEDURE [meta].[delivery_validate]
 ;
-DROP PROCEDURE[meta].[delivery_load]
+DROP PROCEDURE [meta].[delivery_publish]
 ;
-DROP PROCEDURE[meta].[delivery_find]
+DROP PROCEDURE [meta].[delivery_load]
 ;
-DROP PROCEDURE[meta].[delivery_delete]
+DROP PROCEDURE [meta].[delivery_find]
 ;
-DROP PROCEDURE[meta].[delivery_add]
+DROP PROCEDURE [meta].[delivery_delete]
 ;
-DROP PROCEDURE[meta].[debug]
+DROP PROCEDURE [meta].[delivery_add]
 ;
-DROP PROCEDURE[meta].[audit_add]
+DROP PROCEDURE [meta].[debug]
 ;
-DROP PROCEDURE[meta].[analysis_stag2repo]
+DROP PROCEDURE [meta].[audit_add]
 ;
-DROP PROCEDURE[meta].[analysis_file2temp]
+DROP PROCEDURE [meta].[analysis_stag2repo]
 ;
-DROP PROCEDURE[meta].[agreement_rule_add_all]
+DROP PROCEDURE [meta].[analysis_file2temp]
 ;
-DROP PROCEDURE[meta].[agreement_rule_add]
+DROP PROCEDURE [meta].[agreement_rule_add_all]
 ;
-DROP PROCEDURE[meta].[agreement_find]
+DROP PROCEDURE [meta].[agreement_rule_add]
 ;
-DROP PROCEDURE[meta].[agreement_dump]
+DROP PROCEDURE [meta].[agreement_find]
 ;
-DROP PROCEDURE[meta].[agreement_delete]
+DROP PROCEDURE [meta].[agreement_dump]
 ;
-DROP PROCEDURE[meta].[agreement_attribute_add]
+DROP PROCEDURE [meta].[agreement_delete]
 ;
-DROP PROCEDURE[meta].[agreement_add]
+DROP PROCEDURE [meta].[agreement_attribute_add]
+;
+DROP PROCEDURE [meta].[agreement_add]
 ;
 DROP PROCEDURE [meta].delivery_trigger
 ;
@@ -5435,41 +5472,41 @@ DROP PROCEDURE [meta].agreement_trigger_add
 ;
 DROP PROCEDURE [meta].get_data_columns;
 ;
-DROP PROCEDURE[dbo].[define]
+DROP PROCEDURE [dbo].[define]
 ;
-ALTER TABLE[meta].[operation] DROP CONSTRAINT[FK_operation_status]
+ALTER TABLE [meta].[operation] DROP CONSTRAINT[FK_operation_status]
 ;
-ALTER TABLE[meta].[audit] DROP CONSTRAINT[FK_audit_table]
+ALTER TABLE [meta].[audit] DROP CONSTRAINT[FK_audit_table]
 ;
-ALTER TABLE[meta].[audit] DROP CONSTRAINT[FK_audit_stage]
+ALTER TABLE [meta].[audit] DROP CONSTRAINT[FK_audit_stage]
 ;
-ALTER TABLE[meta].[user_group] DROP CONSTRAINT[FK_user_group_user]
+ALTER TABLE [meta].[user_group] DROP CONSTRAINT[FK_user_group_user]
 ;
-ALTER TABLE[meta].[user_group] DROP CONSTRAINT[FK_user_group_group]
+ALTER TABLE [meta].[user_group] DROP CONSTRAINT[FK_user_group_group]
 ;
-ALTER TABLE[meta].[delivery] DROP CONSTRAINT[FK_delivery_user]
+ALTER TABLE [meta].[delivery] DROP CONSTRAINT[FK_delivery_user]
 ;
 ALTER TABLE [meta].[agreement_trigger] DROP CONSTRAINT [FK_agreement_trigger_agreement]
 ;
-ALTER TABLE[meta].[agreement] DROP CONSTRAINT[FK_agreement_user]
+ALTER TABLE [meta].[agreement] DROP CONSTRAINT[FK_agreement_user]
 ;
-ALTER TABLE[meta].[agreement] DROP CONSTRAINT[FK_agreement_type]
+ALTER TABLE [meta].[agreement] DROP CONSTRAINT[FK_agreement_type]
 ;
-ALTER TABLE[meta].[group_agreement] DROP CONSTRAINT[FK_group_agreement_group]
+ALTER TABLE [meta].[group_agreement] DROP CONSTRAINT[FK_group_agreement_group]
 ;
-ALTER TABLE[meta].[group_agreement] DROP CONSTRAINT[FK_group_agreement_agreement]
+ALTER TABLE [meta].[group_agreement] DROP CONSTRAINT[FK_group_agreement_agreement]
 ;
-ALTER TABLE[meta].[group_agreement] DROP CONSTRAINT[FK_group_agreement_access]
+ALTER TABLE [meta].[group_agreement] DROP CONSTRAINT[FK_group_agreement_access]
 ;
-ALTER TABLE[meta].[agreement] DROP CONSTRAINT[FK_agreement_group]
+ALTER TABLE [meta].[agreement] DROP CONSTRAINT[FK_agreement_group]
 ;
-ALTER TABLE[meta].[delivery] DROP CONSTRAINT[FK_delivery_agreement]
+ALTER TABLE [meta].[delivery] DROP CONSTRAINT[FK_delivery_agreement]
 ;
-ALTER TABLE[meta].[audit] DROP CONSTRAINT[FK_audit_delivery]
+ALTER TABLE [meta].[audit] DROP CONSTRAINT[FK_audit_delivery]
 ;
-ALTER TABLE[meta].[agreement_attribute] DROP CONSTRAINT[FK_agreement_attribute_attribute]
+ALTER TABLE [meta].[agreement_attribute] DROP CONSTRAINT[FK_agreement_attribute_attribute]
 ;
-ALTER TABLE[meta].[agreement_attribute] DROP CONSTRAINT[FK_agreement_attribute_agreement]
+ALTER TABLE [meta].[agreement_attribute] DROP CONSTRAINT[FK_agreement_attribute_agreement]
 ;
 DROP TABLE[meta].[agreement_rule]
 ;
