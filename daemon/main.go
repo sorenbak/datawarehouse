@@ -111,7 +111,8 @@ func ProcessCsv(file file.DwFile) {
 }
 
 func deliveryLoad(file file.DwFile) int {
-	filer.PrepareFile(file)
+	filer.PreLoad(file)
+	defer filer.PostLoad(file)
 	// No such thing as owner cross platform - neither in Azure where everything is owned by the Everyone user
 	res, err := db.Exec("EXEC meta.delivery_load $1, $2, $3, $4", file.Path, file.Name, "system", file.Size)
 	if err != nil {
