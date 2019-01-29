@@ -1,7 +1,9 @@
 package file
 
 import (
+	"bytes"
 	"context"
+	"errors"
 	"io/ioutil"
 	"log"
 	"net/url"
@@ -15,23 +17,29 @@ import (
 var ctx = context.Background()
 
 type AzureFiles struct {
-	Blob   azblob.ContainerURL
-	Inbox  azfile.DirectoryURL
-	Outbox azfile.DirectoryURL
+	Blob    azblob.ContainerURL
+	Inbox   azfile.DirectoryURL
+	Outbox  azfile.DirectoryURL
+	LogFile *DwFile
 }
 
 type LocalFiles struct {
-	Inbox  string
-	Outbox string
+	Inbox   string
+	Outbox  string
+	LogFile *DwFile
 }
 
 type DwFile struct {
 	Name string
 	Path string
 	Size int64
+	Log  bytes.Buffer
 }
 
 type DwFiler interface {
+	SetLog(file DwFile)
+	Write(p []byte) (int, error)
+	SaveLog() error
 	ReadInbox() []DwFile
 	ReadFile(file DwFile) (string, error)
 	PreLoad(file DwFile) error
@@ -83,6 +91,27 @@ func NewDwFiler(inbox, outbox, blob string) DwFiler {
 }
 
 // ------------ AzureFiles -------------
+
+// (*AzureFiles) SetLog sets the current log file
+func (filer *AzureFiles) SetLog(file DwFile) {
+	filer.LogFile = &file
+	log.SetOutput(filer)
+}
+func (filer *AzureFiles) Write(p []byte) (int, error) {
+	if filer.LogFile == nil {
+		return 0, errors.New("FileName not set - call SetLog before writing")
+	}
+	return filer.LogFile.Log.Write(p)
+}
+func (filer *AzureFiles) SaveLog() error {
+	if filer.LogFile == nil {
+		return errors.New("FileName not set - call SetLog before saving")
+	}
+	logfile := filer.LogFile
+	filer.LogFile = nil
+	url := filer.Outbox.NewFileURL(logfile.Name + ".log")
+	return azfile.UploadBufferToAzureFile(ctx, logfile.Log.Bytes(), url, azfile.UploadToAzureFileOptions{})
+}
 
 // (*AzureFiles) ReadInbox lists all the files located in Azure File Storage inbox and returns a []DwFile
 func (filer *AzureFiles) ReadInbox() (files []DwFile) {
@@ -236,6 +265,26 @@ func (filer *AzureFiles) MoveFile(file DwFile) error {
 }
 
 // ------------ LocalFiles -------------
+
+// (*LocalFiles) SetLog sets the current log file
+func (filer *LocalFiles) SetLog(file DwFile) {
+	filer.LogFile = &file
+	log.SetOutput(filer)
+}
+func (filer *LocalFiles) Write(p []byte) (int, error) {
+	if filer.LogFile == nil {
+		return 0, errors.New("FileName not set - call SetLog before writing")
+	}
+	return filer.LogFile.Log.Write(p)
+}
+func (filer *LocalFiles) SaveLog() error {
+	if filer.LogFile == nil {
+		return errors.New("FileName not set - call SetLog before saving")
+	}
+	logfile := filer.LogFile
+	filer.LogFile = nil
+	return ioutil.WriteFile(filer.Outbox+logfile.Name+".log", logfile.Log.Bytes(), 0644)
+}
 
 func (filer *LocalFiles) ReadInbox() (files []DwFile) {
 	log.Println("Local: ReadInbox")

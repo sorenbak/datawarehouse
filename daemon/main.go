@@ -62,18 +62,9 @@ func main() {
 	}
 }
 
-func SetLog(file file.DwFile) {
-	// Redirect output to log file in outbox
-	//	logfilename := OUTBOX + "/" + file.Name() + ".log"
-	//	logfile, err := os.Create(logfilename)
-	//	if err != nil {
-	//		log.Fatalf("Could not write logfile [%s]: %v\n", logfilename, err)
-	//	}
-	//	log.SetOutput(logfile)
-}
-
 func ProcessAgreement(file file.DwFile) {
-	SetLog(file)
+	filer.SetLog(file)
+	defer filer.SaveLog()
 	defer filer.MoveFile(file)
 	log.Printf("Load agreement file [%s]\n", file.Name)
 	sql, err := filer.ReadFile(file)
@@ -89,7 +80,8 @@ func ProcessAgreement(file file.DwFile) {
 }
 
 func ProcessCsv(file file.DwFile) {
-	SetLog(file)
+	filer.SetLog(file)
+	defer filer.SaveLog()
 	defer filer.MoveFile(file)
 	agreement_id := agreementFind(file)
 	if agreement_id == "" {
