@@ -77,6 +77,7 @@ func ProcessAgreement(file file.DwFile) {
 		log.Println("Error executing agreement SQL: ", err)
 		return
 	}
+	return
 }
 
 func ProcessCsv(file file.DwFile) {
@@ -97,6 +98,10 @@ func ProcessCsv(file file.DwFile) {
 		return
 	}
 	res = deliveryPublish(file)
+	if res != 0 {
+		return
+	}
+	res = deliveryTrigger(file)
 	if res != 0 {
 		return
 	}
@@ -139,6 +144,19 @@ func deliveryPublish(file file.DwFile) int {
 	}
 	if len(res) > 0 {
 		log.Println("deliveryPublish returned: ", res[0])
+		return 0
+	}
+	return 0
+}
+
+func deliveryTrigger(file file.DwFile) int {
+	res, err := db.Exec("meta.delivery_trigger $1", file.Name)
+	if err != nil {
+		log.Println("deliveryTrigger: ", err)
+		return 1
+	}
+	if len(res) > 0 {
+		log.Println("deliveryTrigger returned: ", res[0])
 		return 0
 	}
 	return 0

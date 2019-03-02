@@ -3,6 +3,7 @@ package repository
 import (
 	"encoding/json"
 	"fmt"
+	"log"
 )
 
 // Repository pattern combined with database singleton
@@ -31,8 +32,12 @@ func (r *dbRepository) Exec(sql string, args ...interface{}) ([]interface{}, err
 	// Do update
 	res, err := r.db.Query(sql, 0, args...)
 	if err != nil {
+		log.Println(err)
 		// Rollback on error
-		_ = r.db.Rollback()
+		err2 := r.db.Rollback()
+		if err2 != nil {
+			log.Println(err)
+		}
 		return res, err
 	}
 	// Commit

@@ -25,5 +25,4 @@ func main() {
 	} else {
 		app.Run(iris.Addr(envy.Get("HTTPADDR", ":8080")), iris.WithoutPathCorrection)
 	}
-	//Daemon()
 }

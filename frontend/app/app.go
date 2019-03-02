@@ -27,6 +27,7 @@ import (
 	"github.com/kataras/iris/context"
 	"github.com/kataras/iris/core/router"
 	"github.com/kataras/iris/hero"
+	"github.com/sorenbak/datawarehouse/file"
 	"github.com/sorenbak/datawarehouse/frontend/auth"
 	"github.com/sorenbak/datawarehouse/frontend/controllers"
 	"github.com/sorenbak/datawarehouse/repository"
@@ -44,6 +45,7 @@ func DwApp(db repository.Dber) *iris.Application {
 	// Register generic db and repository (pseudo IoC via hero)
 	// NOTE: hero has trouble inferring signatures with varying arguments properly - seems like a ramped down IoC
 	hero.Register(repository.NewRepository(db))
+	hero.Register(file.NewDwFiler(envy.Get("INBOX", "./in/"), envy.Get("OUTBOX", "./out/"), envy.Get("BLOB", "")))
 
 	// Determine endpoint
 	api := EndpointParty(app)
@@ -60,6 +62,7 @@ func DwApp(db repository.Dber) *iris.Application {
 	api.Get("/delivery/detail/{delivery_id:int64}", hero.Handler(controllers.DeliveryDetail))
 	api.Get("/delivery/operation/{delivery_id:int64}", hero.Handler(controllers.DeliveryOperation))
 	api.Get("/delivery/download/json/{agreement_name:string}/{delivery_id:int64}}", hero.Handler(controllers.DeliveryDownloadJson))
+	api.Get("/delivery/log/{delivery_id:int64}}", hero.Handler(controllers.DeliveryLog))
 	api.Delete("/delivery/delete/{delivery_id:int64}}", hero.Handler(controllers.DeliveryDelete))
 
 	return app

@@ -1,7 +1,10 @@
 package controllers
 
 import (
+	"fmt"
+
 	"github.com/kataras/iris"
+	"github.com/sorenbak/datawarehouse/file"
 	"github.com/sorenbak/datawarehouse/repository"
 )
 
@@ -241,7 +244,7 @@ func DeliveryDownloadJson(c iris.Context, rep repository.Repository, agreement_n
 
 func DeliveryDelete(c iris.Context, rep repository.Repository, delivery_id int64) string {
 	// swagger:operation DELETE /api/delivery/delete/{delivery_id} Delivery DeliveryDelete
-	// Delete delivert
+	// Delete delivery
 	// ---
 	// produces:
 	// - application/json
@@ -258,4 +261,34 @@ func DeliveryDelete(c iris.Context, rep repository.Repository, delivery_id int64
 		return err.Error()
 	}
 	return res
+}
+
+func DeliveryLog(c iris.Context, rep repository.Repository, filer file.DwFiler, delivery_id int64) string {
+	// swagger:operation GET /api/delivery/log/{delivery_id} Delivery DeliveryLog
+	// Get the log for delivery
+	// ---
+	// produces:
+	// - application/json
+	// parameters:
+	// - name: delivery_id
+	//   type: integer
+	//   in: path
+	//   required: false
+	// responses:
+	//   '200':
+	//     description: OK
+	res, err := rep.Query(`SELECT delivery_name FROM meta.agreement_delivery_max_audit_v WHERE delivery_id = $1`, 1, delivery_id)
+	if err != nil {
+		return err.Error()
+	}
+	if len(res) < 1 {
+		return fmt.Sprintf("delivery_id [%d] not found", delivery_id)
+	}
+	f := res[0].(map[string]interface{})["delivery_name"].(string)
+	dwfile := file.DwFile{Name: f, Path: "", Size: 0}
+	log, err := filer.ReadLog(dwfile)
+	if err != nil {
+		return err.Error()
+	}
+	return log
 }

@@ -1,6 +1,6 @@
 // Determine active tab
-var pathname = window.location.pathname.substring(1,6)
-var title    = window.location.pathname.split('/')[1].split('.')[0].split('_').join(" / ")
+var pathname = window.location.pathname.replace(/.*\//, '').substring(0,5)
+var title    = window.location.pathname.replace(/.*\//, '').split('.')[0].split('_').join(" / ")
 $(document).attr("title", title)
 var agree_class, users_class, group_class, usage_class
 switch(pathname) {

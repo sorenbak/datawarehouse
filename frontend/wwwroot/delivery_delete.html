@@ -1,0 +1,36 @@
+<html>
+  <head>
+    <link rel="stylesheet" type="text/css" href="lib/bootstrap/dist/css/bootstrap.css">
+  </head>
+
+  <body>
+    <div class="container-fluid">
+      <div class="row">
+        <h3>Deleting delivery <div id="delivery_id"></div></h3>
+        <div id="loader" class="alert alert-light text-center" role="alert"><img height="50" src="lib/img/infinite-gif-preloader.gif"/></div>
+      </div>
+    </div>
+    
+    <script src="lib/jquery/dist/jquery.js"></script>
+    <script src="lib/navbar.js"></script>
+    <script>
+      var p  = new URLSearchParams(window.location.search)
+      var agreement_id = p.get('agreement_id') || 0
+      var delivery_id  = p.get('delivery_id')  || 0
+      $('#delivery_id').html(delivery_id)
+      $.ajax({ 
+          type    : 'DELETE',
+          url     : `/api/delivery/delete/${delivery_id}`,
+          error:function () { $('#loader').addClass('alert-danger').html(`[${this.url}]: ${arguments[2]}`) },
+          success:function(data) {
+              $('#loader').remove()
+              $('#delivery_id').html('DONE!')
+              function sleep(ms) {
+                  return new Promise(resolve => setTimeout(resolve, ms));
+              }
+              sleep(1500).then(() => window.location.replace(`agreement_deliveries.html?agreement_id=${agreement_id}`))
+          }
+      })
+    </script>
+  </body>
+</html>	

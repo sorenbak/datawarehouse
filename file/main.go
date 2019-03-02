@@ -42,6 +42,7 @@ type DwFiler interface {
 	SaveLog() error
 	ReadInbox() []DwFile
 	ReadFile(file DwFile) (string, error)
+	ReadLog(file DwFile) (string, error)
 	PreLoad(file DwFile) error
 	PostLoad(file DwFile) error
 	MoveFile(file DwFile) error
@@ -135,6 +136,23 @@ func (filer *AzureFiles) ReadInbox() (files []DwFile) {
 func (filer *AzureFiles) ReadFile(file DwFile) (string, error) {
 	log.Printf("Azure: ReadFile [%s]\n", file.Name)
 	fileUrl := filer.Inbox.NewFileURL(file.Name)
+	props, err := fileUrl.GetProperties(ctx)
+	if err != nil {
+		return "", err
+	}
+	// Prepare buffer large enough to hold entire file
+	buffer := make([]byte, props.ContentLength())
+	_, err = azfile.DownloadAzureFileToBuffer(ctx, fileUrl, buffer, azfile.DownloadFromAzureFileOptions{})
+	if err != nil {
+		return "", err
+	}
+	return string(buffer), nil
+}
+
+// (*AzureFiles) ReadLog reads the contents of an Azure File Storage logfile and returns it as a string
+func (filer *AzureFiles) ReadLog(file DwFile) (string, error) {
+	log.Printf("Azure: ReadLog [%s]\n", file.Name)
+	fileUrl := filer.Outbox.NewFileURL(file.Name + ".log")
 	props, err := fileUrl.GetProperties(ctx)
 	if err != nil {
 		return "", err
@@ -309,6 +327,15 @@ func (filer *LocalFiles) ReadInbox() (files []DwFile) {
 func (filer *LocalFiles) ReadFile(file DwFile) (string, error) {
 	log.Printf("Local: ReadFile [%s]\n", file.Name)
 	content, err := ioutil.ReadFile(file.Path + file.Name)
+	if err != nil {
+		log.Printf("Error reading file [%s]: %v\n", file.Name, err)
+		return "", err
+	}
+	return string(content), nil
+}
+func (filer *LocalFiles) ReadLog(file DwFile) (string, error) {
+	log.Printf("Local: ReadLog [%s]\n", file.Name)
+	content, err := ioutil.ReadFile(filer.Outbox + file.Name + ".log")
 	if err != nil {
 		log.Printf("Error reading file [%s]: %v\n", file.Name, err)
 		return "", err

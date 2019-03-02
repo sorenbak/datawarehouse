@@ -6,7 +6,7 @@
 </ul>
 
 <script>
-  var pathname = window.location.pathname.substring(1,6)
+  var pathname = window.location.pathname.replace(/.*//, '').substring(1,6)
   switch(pathname) {
   case "agree": $("#nav-agreements").addClass("active"); break
   case "deliv": $("#nav-agreements").addClass("active"); break

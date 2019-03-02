@@ -46,7 +46,7 @@
                 $('#details').append(`<tr><th>Stage</th><td>${e.stage_name}</td></tr>`)
                 $('#details').append(`<tr><th>Audit</th><td>${e.audit_description}</td></tr>`)
                 if (e.audit_description != "AGREEMENNT") {
-                    $('#details').append(`<tr><td colspan="2"><a href="delivery_delete.aspx?agreement_id=${e.agreement_id}&delivery_id=${e.delivery_id}">Delete Delivery</a></td></tr>`)
+                    $('#details').append(`<tr><td colspan="2"><a href="delivery_delete.html?agreement_id=${e.agreement_id}&delivery_id=${e.delivery_id}">Delete Delivery</a></td></tr>`)
                 }
             })
         }
