@@ -1,13 +1,13 @@
 <html>
   <head>
-    <link rel="stylesheet" type="text/css" href="/lib/bootstrap/dist/css/bootstrap.css">
+    <link rel="stylesheet" type="text/css" href="lib/bootstrap/dist/css/bootstrap.css">
   </head>
 
   <body>
     <div class="container-fluid">
       <div class="row">
         <div class="col-sm-4">
-          <div id="loader_details" class="alert alert-light text-center" role="alert"><img height="50" src="/lib/img/infinite-gif-preloader.gif"/></div>
+          <div id="loader_details" class="alert alert-light text-center" role="alert"><img height="50" src="lib/img/infinite-gif-preloader.gif"/></div>
           <table class="table table-condensed">
             <tr><th>Name</th><td><a id="name" href="agreement_dump.html?agreement_id="></a></td></tr>
             <tr><th>Description</th><td id="description"></td></tr>
@@ -26,13 +26,13 @@
           <table id="triggers" class="table table-condensed">
             <tr><th>ID</th><th>Trigger</th><th>Description</th></tr>
           </table>
-          <div id="loader_triggers" class="alert alert-light text-center" role="alert"><img height="50" src="/lib/img/infinite-gif-preloader.gif"/></div>
+          <div id="loader_triggers" class="alert alert-light text-center" role="alert"><img height="50" src="lib/img/infinite-gif-preloader.gif"/></div>
         </div>
         <div class="col-sm-4">
           <table id="attributes" class="table table-condensed">
             <tr><th>Attribute</th><th>Value</th><th>Description</th></tr>
           </table>
-          <div id="loader_attributes" class="alert alert-light text-center" role="alert"><img height="50" src="/lib/img/infinite-gif-preloader.gif"/></div>
+          <div id="loader_attributes" class="alert alert-light text-center" role="alert"><img height="50" src="lib/img/infinite-gif-preloader.gif"/></div>
         </div>
       </div>
       <hr>
@@ -42,19 +42,19 @@
           <th>ID</th><th>Validation Rule</th>
         </tr>
       </table>
-      <div id="loader_rules" class="alert alert-light text-center" role="alert"><img height="50" src="/lib/img/infinite-gif-preloader.gif"/></div>
+      <div id="loader_rules" class="alert alert-light text-center" role="alert"><img height="50" src="lib/img/infinite-gif-preloader.gif"/></div>
       
       <hr>
       List of fields of input when data is delivered - when exposed in the repository two more columns are appended (<i>dw_delivery_id</i> and <i>dw_row_id</i> - referencing the internal delivery id and unique row number in the repo table). The mapping is applied when moving data from the <i>temp</i> to the <i>stag</i> schema in order to preserve consistency - if no agreement specific mapping rule is defined for a field a generic mapping may be applied depending on the data type.
       <table id="columns" class="table table-condensed">
         <tr><th>#</th><th>Field</th><th>Type</th><th>Size</th><th>Precision</th><th>Scale</th><td></td><th>Mapping</th><th>Mapping Type</th></tr>
       </table>
-      <div id="loader_columns" class="alert alert-light text-center" role="alert"><img height="50" src="/lib/img/infinite-gif-preloader.gif"/></div>
+      <div id="loader_columns" class="alert alert-light text-center" role="alert"><img height="50" src="lib/img/infinite-gif-preloader.gif"/></div>
     </div>
   </body>
       
-  <script src="/lib/jquery/dist/jquery.js"></script>
-  <script src="/lib/navbar.js"></script>
+  <script src="lib/jquery/dist/jquery.js"></script>
+  <script src="lib/navbar.js"></script>
   <script>
     var p  = new URLSearchParams(window.location.search)
     var agreement_id = p.get('agreement_id') || 0

@@ -37,7 +37,8 @@ func DwApp(db repository.Dber) *iris.Application {
 
 	// Swagger is served in /swagger/index.htm (due to limitation in StaticWeb)
 	app.StaticWeb("/swagger", "./swagger")
-	app.StaticWeb("/", "./wwwroot")
+	app.StaticWeb("/wwwroot", "./wwwroot")
+	app.StaticWeb("/", "./static/build/static")
 
 	// Create repository
 	// Register generic db and repository (pseudo IoC via hero)
