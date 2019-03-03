@@ -44,13 +44,15 @@
           error:function () { $('#loader').addClass('alert-danger').html('Error retrieving data') },
           success:function(data) {
               $('#loader').remove()
-              $.each(data, function(i, e){ 
+              $.each(data, function(i, e){
+                  var pct   = 255-Math.round(255*e.diff_pct)
+                  var color = e.status_date ? `rgb(${pct}, 255, ${pct})` : `#FFA0A0`
                   $('#list')
-                      .append('<tr>'
+                      .append(`<tr style="background-color: ${color};">`
                               +`<td><a class="btn btn-block btn-default" href="agreement_detail.html?agreement_id=${e.id}"><samp>${e.name}</samp></a></td>`
                               +`<td>${e.group_name}</td>`
                               +`<td>${e.description}</td>`
-                              +`<td>${e.createdtm.substring(0, 19)}</td>`
+                              +`<td class="text-nowrap">${e.createdtm.substring(0, 19)}</td>`
                               +`<td title="${e.diff_pct}"><a class="btn btn-block btn-default" href="agreement_deliveries.html?agreement_id=${e.id}">${e.ok}</a></td>`
                               +'</tr>') })
           } 
