@@ -1,6 +1,13 @@
 <html>
+  <head>
     <head title="DW"/>
-    <body>
-        <h1>Hello DW</h1>
-    </body>
+    <link rel="stylesheet" type="text/css" href="lib/bootstrap/dist/css/bootstrap.css">
+  </head>
+  <body>
+    <div class="container-fluid">
+      <input id="jwt" title="paste JWT token here"/>
+      <button onclick="window.localStorage.accessToken = $('#jwt').val(); window.location.replace(`agreements.html`)">USE</button>
+    </div>
+    <script src="lib/jquery/dist/jquery.js"></script>
+  </body>
 </html>

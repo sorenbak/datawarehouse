@@ -75,7 +75,7 @@ func getContainerUrl(sastoken string) azblob.ContainerURL {
 
 // NewDwFiler returns either AzureFiles (if blob set) or LocalFiles
 // The DwFiler interface is implemented for both types
-func NewDwFiler(inbox, outbox, blob string) DwFiler {
+func New(inbox, outbox, blob string) DwFiler {
 	// Azure FILE <-> BLOB
 	if blob != "" {
 		return &AzureFiles{
