@@ -26,6 +26,7 @@
       pagination(`?agreement_id=${agreement_id}`, page)
       $.ajax({ 
           type    : 'GET',
+          headers : {"Authorization": localStorage.getItem('accessToken')},
           url     : `/api/delivery/agreement/${agreement_id}?page=${page}`,
           dataType: 'json',
           error:function () { $('#loader').addClass('alert-danger').html(`[${this.url}]: ${arguments[2]}`) },

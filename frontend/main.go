@@ -1,28 +1,77 @@
+// DataWarehouse
+//
+// Package implements datawarehouse frontend
+// The purpose of this application is to provide data via REST endpoints to frontend clients.
+//   version: 1.0.0
+//   title: datawarehouse frontend
+//   basePath: /
+//   schemes: http, https
+//   securityDefinitions:
+//     Bearer:
+//       type: apiKey
+//       in: header
+//       name: Authorization
+//   security:
+//   - Bearer: []
+//   consumes: application/json
+//   produces: application/json
+// swagger:meta
 package main
 
 // Generate swagger.json file in one place
-//go:generate $GOPATH/bin/swagger generate spec -o swagger/swagger.json --scan-models
+//go:generate go get -u github.com/kataras/bindata/cmd/bindata
+//go:generate mkdir -p data
+//go:generate cp -r ../webapi/swagger wwwroot data
+//go:generate $GOPATH/bin/swagger generate spec -o data/swagger/swagger.json --scan-models
+//go:generate bindata -o data.go data/...
+//go:generate rm -rf data
 
 import (
-	"fmt"
-
-	"github.com/sorenbak/datawarehouse/frontend/app"
+	"github.com/sorenbak/datawarehouse/file"
+	"github.com/sorenbak/datawarehouse/frontend/controllers"
 	"github.com/sorenbak/datawarehouse/repository"
+	"github.com/sorenbak/datawarehouse/webapi"
 
 	"github.com/gobuffalo/envy"
 	"github.com/kataras/iris"
+	"github.com/kataras/iris/hero"
 )
+
+func DwApi(db repository.Dber) (app *iris.Application) {
+	app = webapi.Default()
+	api := webapi.ApiParty(app)
+
+	app.StaticEmbeddedGzip("/", "data", GzipAsset, GzipAssetNames)
+
+	// DI common classes
+	hero.Register(repository.New(db))
+	hero.Register(file.New(envy.Get("INBOX", "./in/"), envy.Get("OUTBOX", "./out/"), envy.Get("BLOB", "")))
+
+	// Agreement
+	api.Get("/agreement/attribute/{agreement_id:int64}", hero.Handler(controllers.AgreementAttribute))
+	api.Get("/agreement/deliverycount/{agreement_id:int64}", hero.Handler(controllers.AgreementDeliveryCount))
+	api.Get("/agreement/{date: string}", hero.Handler(controllers.AgreementList))
+	api.Get("/agreement/column/{agreement_id:int64}", hero.Handler(controllers.AgreementColumn))
+	api.Get("/agreement/rule/{agreement_id:int64}", hero.Handler(controllers.AgreementRule))
+	api.Get("/agreement/trigger/{agreement_id:int64}", hero.Handler(controllers.AgreementTrigger))
+	// Delivery
+	api.Get("/delivery/agreement/{agreement_id:int64}", hero.Handler(controllers.DeliveryList))
+	api.Get("/delivery/detail/{delivery_id:int64}", hero.Handler(controllers.DeliveryDetail))
+	api.Get("/delivery/operation/{delivery_id:int64}", hero.Handler(controllers.DeliveryOperation))
+	api.Get("/delivery/download/json/{agreement_name:string}/{delivery_id:int64}}", hero.Handler(controllers.DeliveryDownloadJson))
+	api.Get("/delivery/log/{delivery_id:int64}}", hero.Handler(controllers.DeliveryLog))
+	api.Delete("/delivery/delete/{delivery_id:int64}}", hero.Handler(controllers.DeliveryDelete))
+	// User
+	api.Get("/user/list", hero.Handler(controllers.UserList))
+
+	return app
+}
 
 func main() {
 	// Only load once
 	envy.Load()
-	db := repository.NewDb()
+
 	// Spawn off the the web service
-	app := app.DwApp(db)
-	if envy.Get("USESSL", "") != "" {
-		fmt.Println("Use SSL")
-		app.Run(iris.AutoTLS(envy.Get("HTTPSADDR", ""), envy.Get("HTTPSFQN", ""), envy.Get("HTTPSEMAIL", "")))
-	} else {
-		app.Run(iris.Addr(envy.Get("HTTPADDR", ":8080")), iris.WithoutPathCorrection)
-	}
+	app := DwApi(repository.NewDb())
+	app.Run(iris.Addr(envy.Get("HTTPADDR", ":8080")), iris.WithoutPathCorrection)
 }

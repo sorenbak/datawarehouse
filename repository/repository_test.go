@@ -3,7 +3,6 @@
 package repository
 
 import (
-	"cv/management/mocks"
 	"testing"
 )
 
@@ -14,7 +13,7 @@ func TestRepository(t *testing.T) {
 		map[string]string{"id": "rov", "name": "bab"},
 	}
 
-	moq := mocks.NewMockDb(data)
+	moq := NewMockDb(data)
 	rep := NewRepository(moq)
 
 	r, _ := rep.Query("1", 1, nil)

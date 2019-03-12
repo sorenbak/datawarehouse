@@ -62,6 +62,7 @@
     $.ajax({ 
         type    : 'GET',
         url     : '/api/agreement/deliverycount/'+agreement_id,
+        headers : {"Authorization": localStorage.getItem('accessToken')},
         dataType: 'json',
         error:function () { $('#loader_details').addClass('alert-danger').html(`[${this.url}]: ${arguments[2]}`) },
         success:function(data) {
@@ -92,6 +93,7 @@
     $.ajax({ 
         type    : 'GET',
         url     : '/api/agreement/trigger/'+agreement_id,
+        headers : {"Authorization": localStorage.getItem('accessToken')},
         dataType: 'json',
         complete:function () { $('#loader_triggers').remove() },
         success:function(data) {
@@ -109,6 +111,7 @@
     $.ajax({ 
         type    : 'GET',
         url     : '/api/agreement/attribute/'+agreement_id,
+        headers : {"Authorization": localStorage.getItem('accessToken')},
         dataType: 'json',
         error:function () { $('#loader_attributes').addClass('alert-danger').html(`[${this.url}]: ${arguments[2]}`) },
         success:function(data) {
@@ -126,6 +129,7 @@
     $.ajax({ 
         type    : 'GET',
         url     : '/api/agreement/rule/'+agreement_id,
+        headers : {"Authorization": localStorage.getItem('accessToken')},
         dataType: 'json',
         error:function () { $('#loader_rules').addClass('alert-danger').html(`[${this.url}]: ${arguments[2]}`) },
         success:function(data) {
@@ -143,6 +147,7 @@
     $.ajax({ 
         type    : 'GET',
         url     : '/api/agreement/column/'+agreement_id,
+        headers : {"Authorization": localStorage.getItem('accessToken')},
         dataType: 'json',
         error:function () { $('#loader_columns').addClass('alert-danger').html(`[${this.url}]: ${arguments[2]}`) },
         success:function(data) {

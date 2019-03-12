@@ -2,7 +2,6 @@ package repository
 
 import (
 	"encoding/json"
-	"fmt"
 	"log"
 )
 
@@ -18,6 +17,11 @@ type dbRepository struct {
 	db Dber
 }
 
+func New(db Dber) Repository {
+	return &dbRepository{db: db}
+}
+
+// Legacy - deprecated
 func NewRepository(db Dber) Repository {
 	return &dbRepository{db: db}
 }
@@ -32,12 +36,8 @@ func (r *dbRepository) Exec(sql string, args ...interface{}) ([]interface{}, err
 	// Do update
 	res, err := r.db.Query(sql, 0, args...)
 	if err != nil {
-		log.Println(err)
 		// Rollback on error
-		err2 := r.db.Rollback()
-		if err2 != nil {
-			log.Println(err)
-		}
+		_ = r.db.Rollback()
 		return res, err
 	}
 	// Commit
@@ -54,7 +54,7 @@ func (r *dbRepository) QueryJson(query string, limit int, args ...interface{}) (
 
 	str, err := json.Marshal(results)
 	if err != nil {
-		fmt.Printf("Error converting results to JSON: [%s]", err)
+		log.Printf("Error converting results to JSON: [%s]", err)
 		return "", err
 	}
 	return string(str), nil

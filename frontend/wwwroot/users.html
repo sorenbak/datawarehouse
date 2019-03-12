@@ -1,0 +1,44 @@
+<html>
+  <head>
+    <link rel="stylesheet" type="text/css" href="lib/bootstrap/dist/css/bootstrap.css">
+  </head>
+
+  <body>
+    <div class="container-fluid">
+      
+      <table class="table table-sm table-condensed table-hover" id="list">
+        <tr>
+          <th>ID</th><th>Username</th><th>Realname</th><th>Description</th><th>Created</th><th>#</th>
+      </table>
+      <div id="loader" class="alert alert-light text-center" role="alert"><img height="50" src="lib/img/infinite-gif-preloader.gif"/></div>
+    </div>
+    
+    <script src="lib/jquery/dist/jquery.js"></script>
+    <script src="lib/navbar.js"></script>
+    <script>
+      var p  = new URLSearchParams(window.location.search)
+      var page = p.get('page') || 0
+      pagination(`?`, page)
+      $.ajax({ 
+          type    : 'GET',
+          headers : {"Authorization": localStorage.getItem('accessToken')},
+          url     : `/api/user/list?page=${page}`,
+          dataType: 'json',
+          error:function () { $('#loader').addClass('alert-danger').html(`[${this.url}]: ${arguments[2]}`) },
+          success:function(data) {
+              $('#loader').remove()
+              $.each(data, function(i, e){
+                  $('#list')
+                      .append(`<tr>`
+                              +`<td>${e.id}</td>`
+                              +`<td>${e.username}</td>`
+                              +`<td>${e.realname}</td>`
+                              +`<td>${e.description}</td>`
+                              +`<td>${e.createdtm}</td>`
+                              +`<td>${e.delivery_count}</td>`
+                              +`</tr>`) })
+    } 
+  })    </script>
+
+  </body>
+</html>	
