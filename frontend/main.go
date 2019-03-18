@@ -39,8 +39,7 @@ import (
 
 func DwApi(db repository.Dber) (app *iris.Application) {
 	app = webapi.Default()
-
-	g = webapi.ApiParty(app)
+	api := webapi.ApiParty(app)
 
 	app.StaticEmbeddedGzip("/", "data", GzipAsset, GzipAssetNames)
 
