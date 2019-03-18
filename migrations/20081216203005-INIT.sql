@@ -2652,6 +2652,45 @@ BEGIN
 END
 ;
 CREATE
+PROCEDURE[meta].[agreement_find] --|
+--| ==========================================================================================
+--| Description: Lookup the agreement from pattern with error handling if several found
+--| Arguments:             
+(
+    @name NVARCHAR(250),      --| Name of file to match against the agreement pattern
+@stage_id     BIGINT,             --| Flag for procedure(2 = temp2stag, 3 = stag2repo)
+    @agreement_id BIGINT         OUT, --| Return found ID
+    @procedure    NVARCHAR(1000) OUT  --| Return found procedure
+)
+AS 
+--| ------------------------------------------------------------------------------------------
+BEGIN
+    DECLARE @count INT
+
+    --| Based on name pattern, lookup the agreement from meta.agreement table
+    EXEC meta.debug @@PROCID, @name
+    SELECT @agreement_id = MAX(a.id),
+           @procedure    = MAX(CASE WHEN @stage_id = 1 THEN a.file2temp
+                                    WHEN @stage_id = 2 THEN a.temp2stag
+                                    WHEN @stage_id = 3 THEN a.stag2repo
+                                    ELSE ''
+                               END),
+           @count        = COUNT(*)
+      FROM meta.agreement a
+     WHERE @name LIKE a.pattern
+     
+    --+ Error + exit if no or several agreement found
+    IF @count > 1 
+    BEGIN
+        RAISERROR ('Several agreements [%I64d] matching [%s]', 10, 1, @count, @name)
+        RETURN 2
+    END
+
+    RETURN
+END
+--| ==========================================================================================
+;
+CREATE
 PROCEDURE [meta].[delivery_trigger] --|
 --| ==========================================================================================
 --| Author:      Soren Bak Larsen
@@ -2990,45 +3029,6 @@ SELECT COALESCE(string_agg(strng, ','), '')
        AND cm.table_schema = 'repo'
        AND d.id = @delivery_id
      ORDER BY ordinal_position) a
---| ==========================================================================================
-;
-CREATE
-PROCEDURE[meta].[agreement_find] --|
---| ==========================================================================================
---| Description: Lookup the agreement from pattern with error handling if several found
---| Arguments:             
-(
-    @name NVARCHAR(250),      --| Name of file to match against the agreement pattern
-@stage_id     BIGINT,             --| Flag for procedure(2 = temp2stag, 3 = stag2repo)
-    @agreement_id BIGINT         OUT, --| Return found ID
-    @procedure    NVARCHAR(1000) OUT  --| Return found procedure
-)
-AS 
---| ------------------------------------------------------------------------------------------
-BEGIN
-    DECLARE @count INT
-
-    --| Based on name pattern, lookup the agreement from meta.agreement table
-    EXEC meta.debug @@PROCID, @name
-    SELECT @agreement_id = MAX(a.id),
-           @procedure    = MAX(CASE WHEN @stage_id = 1 THEN a.file2temp
-                                    WHEN @stage_id = 2 THEN a.temp2stag
-                                    WHEN @stage_id = 3 THEN a.stag2repo
-                                    ELSE ''
-                               END),
-           @count        = COUNT(*)
-      FROM meta.agreement a
-     WHERE @name LIKE a.pattern
-     
-    --+ Error + exit if no or several agreement found
-    IF @count > 1 
-    BEGIN
-        RAISERROR ('Several agreements [%I64d] matching [%s]', 10, 1, @count, @name)
-        RETURN 2
-    END
-
-    RETURN
-END
 --| ==========================================================================================
 ;
 CREATE PROCEDURE[meta].[agreement_rule_add] --|

@@ -11,6 +11,7 @@ import (
 
 	_ "github.com/denisenkom/go-mssqldb"
 	"github.com/gobuffalo/envy"
+	"github.com/gobuffalo/packr"
 	"github.com/rubenv/sql-migrate"
 )
 
@@ -38,7 +39,7 @@ func _migrate(db *sql.DB) (err error) {
 		return errors.New("No migrations table specified -  please set DB_MIGRATIONS_TABLE")
 	}
 
-	migrations := &migrate.FileMigrationSource{Dir: envy.Get("DB_MIGRATIONS_PATH", "../migrations")}
+	migrations := &migrate.PackrMigrationSource{Box: packr.NewBox("../migrations")}
 	migrate.SetTable(table)
 	n, err := migrate.Exec(db, envy.Get("DBTYPE", "mssql"), migrations, migrate.Up)
 
