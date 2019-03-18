@@ -33,7 +33,7 @@ func GetConfig() {
 		log.Fatal("meta.azure_credentials failed: ", err)
 	}
 
-	filer = file.NewDwFiler(envy.Get("INBOX", "./in/"), envy.Get("OUTBOX", "./out/"), blob)
+	filer = file.New(envy.Get("INBOX", "./in/"), envy.Get("OUTBOX", "./out/"), blob)
 }
 
 func main() {
