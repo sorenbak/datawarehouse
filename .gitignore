@@ -9,6 +9,5 @@
 dbconfig.yml
 *.out
 *~
-swagger.json
 .env*
 notes.txt

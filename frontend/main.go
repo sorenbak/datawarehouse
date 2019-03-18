@@ -19,12 +19,11 @@
 package main
 
 // Generate swagger.json file in one place
-//go:generate go get -u github.com/kataras/bindata/cmd/bindata
-//go:generate mkdir -p data
-//go:generate cp -r ../webapi/swagger wwwroot data
-//go:generate $GOPATH/bin/swagger generate spec -o data/swagger/swagger.json --scan-models
-//go:generate bindata -o data.go data/...
-//go:generate rm -rf data
+//!!!go:generate go get -u github.com/kataras/bindata/cmd/bindata
+//!!!go:generate cp -r ../webapi/swagger .
+//go:generate $GOPATH/bin/swagger generate spec -o ../webapi/swagger/swagger.json --scan-models
+//!!!go:generate bindata -o data.go data/...
+//!!!go:generate rm -rf data
 
 import (
 	"github.com/sorenbak/datawarehouse/file"
@@ -33,6 +32,7 @@ import (
 	"github.com/sorenbak/datawarehouse/webapi"
 
 	"github.com/gobuffalo/envy"
+	"github.com/gobuffalo/packr"
 	"github.com/kataras/iris"
 	"github.com/kataras/iris/hero"
 )
@@ -41,7 +41,10 @@ func DwApi(db repository.Dber) (app *iris.Application) {
 	app = webapi.Default()
 	api := webapi.ApiParty(app)
 
-	app.StaticEmbeddedGzip("/", "data", GzipAsset, GzipAssetNames)
+	dat := packr.NewBox("../webapi/swagger")
+	app.StaticEmbedded("/swagger", "", dat.Find, dat.List)
+	dat = packr.NewBox("./wwwroot")
+	app.StaticEmbedded("/", "", dat.Find, dat.List)
 
 	// DI common classes
 	hero.Register(repository.New(db))

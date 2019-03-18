@@ -1,0 +1,819 @@
+{
+  "schemes": [
+    "http",
+    "https"
+  ],
+  "swagger": "2.0",
+  "info": {
+    "description": "Package implements datawarehouse frontend\nThe purpose of this application is to provide data via REST endpoints to frontend clients.",
+    "title": "DataWarehouse",
+    "version": "1.0.0"
+  },
+  "basePath": "/",
+  "paths": {
+    "/api/agreement/attribute/{agreement_id}": {
+      "get": {
+        "description": "List available agreement details",
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "Agreement"
+        ],
+        "operationId": "AgreementAttribute",
+        "parameters": [
+          {
+            "type": "integer",
+            "name": "agreement_id",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "title": "AgreementAttribute",
+                "properties": {
+                  "agreement_id": {
+                    "description": "ID of agreement",
+                    "type": "integer"
+                  },
+                  "agreement_name": {
+                    "description": "Name of agreement",
+                    "type": "string"
+                  },
+                  "attribute_description": {
+                    "description": "Human readable description of attribute",
+                    "type": "string"
+                  },
+                  "attribute_id": {
+                    "description": "ID of attribute",
+                    "type": "integer"
+                  },
+                  "attribute_name": {
+                    "description": "Name of attribute",
+                    "type": "string"
+                  },
+                  "attribute_options": {
+                    "description": "Valid options for attribute values (| separated values)",
+                    "type": "string"
+                  },
+                  "createdtm": {
+                    "description": "Creation Date/Time",
+                    "type": "timestamp"
+                  },
+                  "value": {
+                    "description": "Actual value of attribute",
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/agreement/column/{agreement_id}": {
+      "get": {
+        "description": "List columns of agreement",
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "Agreement"
+        ],
+        "operationId": "AgreementColumn",
+        "parameters": [
+          {
+            "type": "integer",
+            "name": "agreement_id",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "title": "AgreementAttribute",
+                "properties": {
+                  "agreement_id": {
+                    "description": "ID of agreement",
+                    "type": "integer"
+                  },
+                  "character_maximum_length": {
+                    "description": "If *CHAR type the max length",
+                    "type": "integer"
+                  },
+                  "column_name": {
+                    "description": "Name of column",
+                    "type": "string"
+                  },
+                  "data_type": {
+                    "description": "SQL data type",
+                    "type": "string"
+                  },
+                  "mapping": {
+                    "description": "Mapping code",
+                    "type": "string"
+                  },
+                  "mapping_type": {
+                    "description": "Type of mapping (custom/default)",
+                    "type": "string"
+                  },
+                  "numeric_precision": {
+                    "description": "If NUMERIC the precision",
+                    "type": "integer"
+                  },
+                  "numeric_scale": {
+                    "description": "If NUMERIC the scale",
+                    "type": "integer"
+                  },
+                  "ordinal_position": {
+                    "description": "Order in table",
+                    "type": "integer"
+                  },
+                  "table_name": {
+                    "description": "Name of table",
+                    "type": "string"
+                  },
+                  "table_schema": {
+                    "description": "Schema of table in stage",
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/agreement/deliverycount/{agreement_id}": {
+      "get": {
+        "description": "List delivery acount and other meta data per agreement",
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "Agreement"
+        ],
+        "operationId": "AgreementDeliveryCount",
+        "parameters": [
+          {
+            "type": "integer",
+            "name": "id",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "title": "AgreementDeliveryCount",
+                "properties": {
+                  "createdtm": {
+                    "description": "Date and time of agreement creation",
+                    "type": "timestamp"
+                  },
+                  "description": {
+                    "description": "Description of agreement",
+                    "type": "string"
+                  },
+                  "file2temp": {
+                    "description": "Procedure for moving deliveries from file to temp",
+                    "type": "string"
+                  },
+                  "frequecy": {
+                    "description": "expected frequency of deliveries",
+                    "type": "integer"
+                  },
+                  "group_id": {
+                    "description": "ID of owning group",
+                    "type": "integer"
+                  },
+                  "group_name": {
+                    "description": "Name of group",
+                    "type": "string"
+                  },
+                  "id": {
+                    "description": "ID of agreement",
+                    "type": "integer"
+                  },
+                  "modifydtm": {
+                    "description": "Date and time of agreement modification",
+                    "type": "timestamp"
+                  },
+                  "name": {
+                    "description": "Name of agreement",
+                    "type": "string"
+                  },
+                  "pattern": {
+                    "description": "Prefix pattern for picking up files in delivery in",
+                    "type": "string"
+                  },
+                  "repo_count": {
+                    "description": "Number of deliveries in repo",
+                    "type": "integer"
+                  },
+                  "stag2repo": {
+                    "description": "Procedure for moving deliveries from stag to repo",
+                    "type": "string"
+                  },
+                  "stag_count": {
+                    "description": "Number of deliveries in stag",
+                    "type": "integer"
+                  },
+                  "temp2stag": {
+                    "description": "Procedure for moving deliveries from temp to stag",
+                    "type": "string"
+                  },
+                  "temp_count": {
+                    "description": "Number of deliveries in temp",
+                    "type": "integer"
+                  },
+                  "type_id": {
+                    "description": "ID of type",
+                    "type": "integer"
+                  },
+                  "type_name": {
+                    "description": "Name of type",
+                    "type": "string"
+                  },
+                  "user_id": {
+                    "description": "ID of owning user",
+                    "type": "integer"
+                  },
+                  "user_name": {
+                    "description": "Name of user",
+                    "type": "string"
+                  },
+                  "user_realname": {
+                    "description": "Realname of user",
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/agreement/rule/{agreement_id}": {
+      "get": {
+        "description": "List agreement rules",
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "Agreement"
+        ],
+        "operationId": "AgreementRule",
+        "parameters": [
+          {
+            "type": "integer",
+            "name": "agreement_id",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "title": "AgreementRule",
+                "properties": {
+                  "agreement_id": {
+                    "description": "ID of agreement",
+                    "type": "integer"
+                  },
+                  "rule_id": {
+                    "description": "ID of rule within agreement",
+                    "type": "integer"
+                  },
+                  "rule_text": {
+                    "description": "Code of rule",
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/agreement/trigger/{agreement_id}": {
+      "get": {
+        "description": "List agreement triggers",
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "Agreement"
+        ],
+        "operationId": "AgreementTrigger",
+        "parameters": [
+          {
+            "type": "integer",
+            "name": "agreement_id",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "title": "AgreementRule",
+                "properties": {
+                  "agreement_id": {
+                    "description": "ID of agreement",
+                    "type": "integer"
+                  },
+                  "description": {
+                    "description": "Trigger description",
+                    "type": "string"
+                  },
+                  "trigger_id": {
+                    "description": "ID of trigger within agreement",
+                    "type": "integer"
+                  },
+                  "trigger_text": {
+                    "description": "Code of trigger",
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/agreement/{date}": {
+      "get": {
+        "description": "List agreements and number of deliveries along with some state",
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "Agreement"
+        ],
+        "operationId": "AgreementList",
+        "parameters": [
+          {
+            "type": "string",
+            "name": "date",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "title": "Agreements",
+                "properties": {
+                  "createdtm": {
+                    "description": "Date of creation",
+                    "type": "string"
+                  },
+                  "description": {
+                    "description": "Description of agreement",
+                    "type": "string"
+                  },
+                  "err": {
+                    "description": "Number of deliveries on error (NULL if none)",
+                    "type": "integer"
+                  },
+                  "file2temp": {
+                    "description": "Procedure for moving deliveries from file to temp",
+                    "type": "string"
+                  },
+                  "frequecy": {
+                    "description": "expected frequency of deliveries",
+                    "type": "integer"
+                  },
+                  "group_id": {
+                    "description": "ID of owning group",
+                    "type": "integer"
+                  },
+                  "group_name": {
+                    "description": "Name of owning group",
+                    "type": "string"
+                  },
+                  "id": {
+                    "description": "ID of agreement",
+                    "type": "integer"
+                  },
+                  "modifydtm": {
+                    "description": "Date of last modification",
+                    "type": "string"
+                  },
+                  "name": {
+                    "description": "Name of agreement",
+                    "type": "string"
+                  },
+                  "ok": {
+                    "description": "Number of deliveries in state OK",
+                    "type": "integer"
+                  },
+                  "pattern": {
+                    "description": "Pattern for picking up dataset from inbox",
+                    "type": "string"
+                  },
+                  "stag2repo": {
+                    "description": "Procedure for moving deliveries from stag to repo",
+                    "type": "string"
+                  },
+                  "status_date": {
+                    "description": "Pct difference from allowed distance to latest delivery versus frequency",
+                    "type": "float"
+                  },
+                  "temp2stag": {
+                    "description": "Procedure for moving deliveries from temp to stag",
+                    "type": "string"
+                  },
+                  "type_id": {
+                    "description": "ID of agreement type (how to BULK INSERT)",
+                    "type": "integer"
+                  },
+                  "user_id": {
+                    "description": "ID of owning user",
+                    "type": "integer"
+                  },
+                  "user_realname": {
+                    "description": "Real name of owning user",
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/delivery/agreement/{agreement_id}": {
+      "get": {
+        "description": "List available deliveries",
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "Delivery"
+        ],
+        "operationId": "DeliveryList",
+        "parameters": [
+          {
+            "type": "integer",
+            "name": "agreement_id",
+            "in": "path"
+          },
+          {
+            "type": "integer",
+            "description": "Page of results (starting with 0 - default)",
+            "name": "page",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/DeliveryDto"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/delivery/delete/{delivery_id}": {
+      "delete": {
+        "description": "Delete delivery",
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "Delivery"
+        ],
+        "operationId": "DeliveryDelete",
+        "parameters": [
+          {
+            "type": "integer",
+            "name": "delivery_id",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/delivery/detail/{delivery_id}": {
+      "get": {
+        "description": "Retrieve details for a single delivery",
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "Delivery"
+        ],
+        "operationId": "DeliveryDetail",
+        "parameters": [
+          {
+            "type": "integer",
+            "name": "delivery_id",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/DeliveryDto"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/delivery/download/json/{agreement_name}/{delivery_id}": {
+      "get": {
+        "description": "Download contents of delivery",
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "Delivery"
+        ],
+        "operationId": "DeliveryDownloadJson",
+        "parameters": [
+          {
+            "type": "string",
+            "name": "agreement_name",
+            "in": "path"
+          },
+          {
+            "type": "integer",
+            "name": "delivery_id",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "title": "DeliveryJson",
+                "properties": {
+                  "dw_delivery_id": {
+                    "description": "ID of delivery",
+                    "type": "integer"
+                  },
+                  "dw_row_id": {
+                    "description": "ID of row in delivery",
+                    "type": "integer"
+                  },
+                  "original": {
+                    "description": "Remaining columns in the original dataset",
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/delivery/log/{delivery_id}": {
+      "get": {
+        "description": "Get the log for delivery",
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "Delivery"
+        ],
+        "operationId": "DeliveryLog",
+        "parameters": [
+          {
+            "type": "integer",
+            "name": "delivery_id",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/delivery/operation/{delivery_id}": {
+      "get": {
+        "description": "Download contents of delivery",
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "Delivery"
+        ],
+        "operationId": "DeliveryOperation",
+        "parameters": [
+          {
+            "type": "integer",
+            "name": "delivery_id",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "title": "DeliveryOperation",
+                "properties": {
+                  "agreement_id": {
+                    "description": "ID of agreement",
+                    "type": "integer"
+                  },
+                  "audit_createdtm": {
+                    "description": "Date of creation of audit etry",
+                    "type": "string"
+                  },
+                  "audit_description": {
+                    "description": "Description of audit entry",
+                    "type": "string"
+                  },
+                  "audit_id": {
+                    "description": "ID of audit",
+                    "type": "integer"
+                  },
+                  "delivery_id": {
+                    "description": "ID of delivery",
+                    "type": "integer"
+                  },
+                  "operation_createdtm": {
+                    "description": "Date of creation of operation entry",
+                    "type": "string"
+                  },
+                  "operation_descrription": {
+                    "description": "Description of operation entry",
+                    "type": "string"
+                  },
+                  "operation_id": {
+                    "description": "ID of operation entry",
+                    "type": "integer"
+                  },
+                  "operation_name": {
+                    "description": "Name of operation entry",
+                    "type": "string"
+                  },
+                  "stage_id": {
+                    "description": "ID of stage entry",
+                    "type": "integer"
+                  },
+                  "stage_name": {
+                    "description": "Name of stage entry",
+                    "type": "string"
+                  },
+                  "status_description": {
+                    "description": "Description of status entry of delivery in current stage",
+                    "type": "string"
+                  },
+                  "status_id": {
+                    "description": "ID of status entry of delivery in current stage",
+                    "type": "string"
+                  },
+                  "table_createdtm": {
+                    "description": "Date of creation of table in current stage",
+                    "type": "string"
+                  },
+                  "table_id": {
+                    "description": "ID of table entry of delivery in current stage",
+                    "type": "integer"
+                  },
+                  "table_name": {
+                    "description": "Name of table in current stage",
+                    "type": "string"
+                  },
+                  "table_schema": {
+                    "description": "Name of table schema in current stage",
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/user/list": {
+      "get": {
+        "description": "List available users",
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "User"
+        ],
+        "operationId": "UserList",
+        "parameters": [
+          {
+            "type": "integer",
+            "description": "Page of results (starting with 0 - default)",
+            "name": "page",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "title": "UserList",
+                "properties": {
+                  "createdtm": {
+                    "description": "Date of creation",
+                    "type": "string"
+                  },
+                  "delivery_count": {
+                    "description": "Count of deliveries",
+                    "type": "integer"
+                  },
+                  "description": {
+                    "description": "Description of user",
+                    "type": "string"
+                  },
+                  "id": {
+                    "description": "ID of user",
+                    "type": "integer"
+                  },
+                  "realname": {
+                    "description": "Real name of user",
+                    "type": "string"
+                  },
+                  "username": {
+                    "description": "Username of user",
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "definitions": {
+    "DeliveryDto": {
+      "description": "Details for an agreement",
+      "type": "object",
+      "x-go-package": "github.com/sorenbak/datawarehouse/frontend/controllers"
+    }
+  },
+  "securityDefinitions": {
+    "Bearer": {
+      "type": "apiKey",
+      "name": "Authorization",
+      "in": "header"
+    }
+  },
+  "security": [
+    {
+      "Bearer": [
+        "[]"
+      ]
+    }
+  ]
+}
