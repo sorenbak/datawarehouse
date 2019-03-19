@@ -11,13 +11,13 @@ import (
 
 	_ "github.com/denisenkom/go-mssqldb"
 	"github.com/gobuffalo/envy"
-	"github.com/gobuffalo/packr"
 	"github.com/rubenv/sql-migrate"
 )
 
 var once sync.Once
 var singleDb *sql.DB
 var migrate_flag = flag.Bool("migrate", false, "Flag specifying if migrations should be applied")
+var migrations migrate.MigrationSource
 
 type Dber interface {
 	Query(query string, limit int, args ...interface{}) (results []interface{}, err error)
@@ -33,6 +33,9 @@ type Db struct {
 	retry int64
 }
 
+// Enable different sources of migrations
+func SetMigrationSource(m migrate.MigrationSource) { migrations = m }
+
 // migrate is an experimental command line flag migrating UP if --migrate is set
 func _migrate(db *sql.DB) (err error) {
 	table := envy.Get("DB_MIGRATIONS_TABLE", "")
@@ -40,7 +43,9 @@ func _migrate(db *sql.DB) (err error) {
 		return errors.New("No migrations table specified -  please set DB_MIGRATIONS_TABLE")
 	}
 
-	migrations := &migrate.PackrMigrationSource{Box: packr.NewBox("../migrations")}
+	if migrations == nil {
+		migrations = &migrate.FileMigrationSource{Dir: "../migrations"}
+	}
 	migrate.SetTable(table)
 	n, err := migrate.Exec(db, envy.Get("DBTYPE", "mssql"), migrations, migrate.Up)
 

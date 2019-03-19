@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/gobuffalo/envy"
+	migrate "github.com/rubenv/sql-migrate"
 	"github.com/sorenbak/datawarehouse/file"
 	"github.com/sorenbak/datawarehouse/repository"
 )
@@ -18,6 +19,12 @@ var filer file.DwFiler
 
 // Make daemon testable
 func GetConfig() {
+	// Load assets from bindata.go
+	repository.SetMigrationSource(&migrate.AssetMigrationSource{
+		Asset:    Asset,
+		AssetDir: AssetDir,
+		Dir:      "../migrations"})
+
 	db = repository.NewRepository(repository.NewDb())
 	envy.Load()
 	sleepsecs, _ = strconv.Atoi(envy.Get("SLEEPSECS", "60"))
