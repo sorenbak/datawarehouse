@@ -17,6 +17,7 @@ import (
 
 var once sync.Once
 var singleDb *sql.DB
+var migrate_flag = flag.Bool("migrate", false, "Flag specifying if migrations should be applied")
 
 type Dber interface {
 	Query(query string, limit int, args ...interface{}) (results []interface{}, err error)
@@ -79,7 +80,6 @@ func NewDb() *Db {
 		}
 
 		// Top level do once check for the migrate flag
-		migrate_flag := flag.Bool("migrate", false, "Flag specifying if migrations should be applied")
 		flag.Parse()
 		if *migrate_flag {
 			err := _migrate(db)
@@ -98,6 +98,15 @@ func (db *Db) Commit() (err error) {
 
 func (db *Db) Begin() (err error) {
 	db.tx, err = db.db.Begin()
+	if err != nil {
+		// Known issue with connections being reset (due to idle?)
+		if strings.HasSuffix(err.Error(), "connection reset by peer") && db.retry < 2 {
+			db.retry += 1
+			return db.Begin()
+		}
+		db.retry = 0
+		log.Printf("Begin() failed: [%s]\n", err)
+	}
 	return err
 }
 
