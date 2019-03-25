@@ -27,7 +27,6 @@ package main
 
 import (
 	"github.com/sorenbak/datawarehouse/file"
-	"github.com/sorenbak/datawarehouse/frontend/controllers"
 	"github.com/sorenbak/datawarehouse/repository"
 	"github.com/sorenbak/datawarehouse/webapi"
 
@@ -51,21 +50,21 @@ func DwApi(db repository.Dber) (app *iris.Application) {
 	hero.Register(file.New(envy.Get("INBOX", "./in/"), envy.Get("OUTBOX", "./out/"), envy.Get("BLOB", "")))
 
 	// Agreement
-	api.Get("/agreement/attribute/{agreement_id:int64}", hero.Handler(controllers.AgreementAttribute))
-	api.Get("/agreement/deliverycount/{agreement_id:int64}", hero.Handler(controllers.AgreementDeliveryCount))
-	api.Get("/agreement/{date: string}", hero.Handler(controllers.AgreementList))
-	api.Get("/agreement/column/{agreement_id:int64}", hero.Handler(controllers.AgreementColumn))
-	api.Get("/agreement/rule/{agreement_id:int64}", hero.Handler(controllers.AgreementRule))
-	api.Get("/agreement/trigger/{agreement_id:int64}", hero.Handler(controllers.AgreementTrigger))
+	api.Get("/agreement/attribute/{agreement_id:int64}", hero.Handler(AgreementAttribute))
+	api.Get("/agreement/deliverycount/{agreement_id:int64}", hero.Handler(AgreementDeliveryCount))
+	api.Get("/agreement/{date: string}", hero.Handler(AgreementList))
+	api.Get("/agreement/column/{agreement_id:int64}", hero.Handler(AgreementColumn))
+	api.Get("/agreement/rule/{agreement_id:int64}", hero.Handler(AgreementRule))
+	api.Get("/agreement/trigger/{agreement_id:int64}", hero.Handler(AgreementTrigger))
 	// Delivery
-	api.Get("/delivery/agreement/{agreement_id:int64}", hero.Handler(controllers.DeliveryList))
-	api.Get("/delivery/detail/{delivery_id:int64}", hero.Handler(controllers.DeliveryDetail))
-	api.Get("/delivery/operation/{delivery_id:int64}", hero.Handler(controllers.DeliveryOperation))
-	api.Get("/delivery/download/json/{agreement_name:string}/{delivery_id:int64}}", hero.Handler(controllers.DeliveryDownloadJson))
-	api.Get("/delivery/log/{delivery_id:int64}}", hero.Handler(controllers.DeliveryLog))
-	api.Delete("/delivery/delete/{delivery_id:int64}}", hero.Handler(controllers.DeliveryDelete))
+	api.Get("/delivery/agreement/{agreement_id:int64}", hero.Handler(DeliveryList))
+	api.Get("/delivery/detail/{delivery_id:int64}", hero.Handler(DeliveryDetail))
+	api.Get("/delivery/operation/{delivery_id:int64}", hero.Handler(DeliveryOperation))
+	api.Get("/delivery/download/json/{agreement_name:string}/{delivery_id:int64}}", hero.Handler(DeliveryDownloadJson))
+	api.Get("/delivery/log/{delivery_id:int64}}", hero.Handler(DeliveryLog))
+	api.Delete("/delivery/delete/{delivery_id:int64}}", hero.Handler(DeliveryDelete))
 	// User
-	api.Get("/user/list", hero.Handler(controllers.UserList))
+	api.Get("/user/list", hero.Handler(UserList))
 
 	return app
 }
