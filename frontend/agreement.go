@@ -220,7 +220,7 @@ func AgreementList(c iris.Context, rep repository.Repository, date string) (stri
 	//          status_date:
 	//            description: Pct difference from allowed distance to latest delivery versus frequency
 	//            type: float
-	return rep.QueryJson(`SELECT * FROM meta.get_agreements($1)`, 0, date)
+	return rep.QueryJson(`SELECT * FROM meta.get_agreements($1) ORDER BY name`, 0, date)
 }
 
 func AgreementColumn(c iris.Context, rep repository.Repository, agreement_id int64) string {

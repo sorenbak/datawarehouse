@@ -50,7 +50,7 @@
                   var color = e.status_date ? `rgb(${pct}, 255, ${pct})` : `#FFA0A0`
                   $('#list')
                       .append(`<tr style="background-color: ${color};">`
-                              +`<td><a class="btn btn-block btn-default" href="agreement_detail.html?agreement_id=${e.id}"><samp>${e.name}</samp></a></td>`
+                              +`<td><a class="btn btn-block btn-default text-left" href="agreement_detail.html?agreement_id=${e.id}"><samp>${e.name}</samp></a></td>`
                               +`<td>${e.group_name}</td>`
                               +`<td>${e.description}</td>`
                               +`<td class="text-nowrap">${e.createdtm.substring(0, 19)}</td>`
